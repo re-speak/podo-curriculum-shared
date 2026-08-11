@@ -60,6 +60,14 @@
   var teachBtn = bar.querySelector(".pg-teach");
   var scrub    = bar.querySelector(".pg-scrub");
 
+  /* 학생 앱이 명시한 화면에서만 티칭 모드를 없앤다. 역할이 없으면 레슨을
+     직접 연 내부 공유·검수 화면일 수 있으므로 기존처럼 버튼을 보여 준다. */
+  var lessonContext = window.PODO_LESSON_CONTEXT || {};
+  if (lessonContext.viewerRole === "student" && teachBtn) {
+    teachBtn.remove();
+    teachBtn = null;
+  }
+
   function paint() {
     if (prevBtn) prevBtn.disabled = at <= 0;
     if (nextBtn) nextBtn.disabled = at >= pages.length - 1;
@@ -150,7 +158,8 @@
 
   /* ---- teaching mode is the one thing that stays on this screen ----
      The tutor flips it to reveal answers; sending it would hand the
-     learner the whole key. 공유하지 않는 유일한 상태다. */
+     learner the whole key. 공유하지 않는 유일한 상태다. 학생 앱이 명시한
+     화면에는 버튼 자체가 없고, 그 밖의 화면에서만 이 핸들러를 붙인다. */
   if (teachBtn) {
     teachBtn.addEventListener("click", function () {
       var on = document.body.classList.toggle("teaching");
