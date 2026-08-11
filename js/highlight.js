@@ -43,6 +43,31 @@
     "button,a,input,textarea,select,label,[contenteditable]," +
     "[data-sync-id],[data-sync-option],[data-ok]";
 
+  /* 위젯이지만 그 안의 글은 여전히 글인 것.
+
+     예습 지문의 한 줄은 눌러서 여는 것이라 data-sync-option 을 달고 있고,
+     그래서 위 목록에 통째로 걸린다 — 이 덱에서 튜터가 가장 오래 들여다보며
+     "이 낱말이요" 하고 짚는 바로 그 글인데도 형광펜이 닿지 않았다.
+     제외 규칙이 막으려던 것은 「글자가 바뀌는 자리에 자국을 남기지 마라」다.
+     지문의 글자는 수업 내내 한 글자도 안 바뀌므로 그 이유가 없다.
+
+     드래그와 탭이 부딪히지 않는 것은 이미 아래 capture 클릭이 해 준다:
+     그은 뒤 따라오는 클릭은 거기서 멈춘다 — 줄이 열리고 닫히지 않는다. */
+  var MARKABLE = ".sents .sent";
+
+  function offLimits(el) {
+    return el.closest(INTERACTIVE) && !el.closest(MARKABLE);
+  }
+
+  /* 문장 한가운데 끼워 넣은 강조 — 블록이 아니라 부모의 글의 일부다.
+
+     낱말 하나를 <span> 으로 싸면 아래 stamp 가 그것도 한 블록으로 세고,
+     그 순간 부모 문장이 토막 난다. 그러면 강조를 가로질러 그은 자국이
+     그 낱말만 건너뛰고 남는다 — 문장 전체에 형광펜을 그었는데 가운데
+     한 낱말만 하얗게 뚫려 있는 그림이다. 번호를 안 주면 부모가 자기
+     글의 일부로 그대로 안고 가므로, 글자 세는 자리도 하나로 남는다. */
+  var INLINE = ".s-key";
+
   /* ---- 글이 든 블록에 번호 매기기 ----
      "자기 텍스트를 직접 가진 요소" 가 한 블록이다. 자식이 또 글을 가지고
      있으면 그 자식이 자기 블록을 따로 가지므로, 글은 겹치지 않게 나뉜다. */
@@ -51,7 +76,7 @@
     var all = phone.querySelectorAll("*");
     for (var i = 0; i < all.length; i++) {
       var el = all[i];
-      if (el.closest(INTERACTIVE)) continue;
+      if (offLimits(el) || el.matches(INLINE)) continue;
       for (var c = el.firstChild; c; c = c.nextSibling) {
         if (c.nodeType === 3 && c.nodeValue.trim()) {
           el.setAttribute("data-hl", String(n++));
@@ -71,7 +96,7 @@
         if (n.nodeType === 3) { out.push(n); continue; }
         if (n.nodeType !== 1) continue;
         if (n.hasAttribute("data-hl")) continue;
-        if (n.matches(INTERACTIVE)) continue;
+        if (n.matches(INTERACTIVE) && !n.closest(MARKABLE)) continue;
         walk(n);
       }
     })(anchor);
@@ -176,7 +201,7 @@
     var r = sel.getRangeAt(0);
     var start = r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentNode;
     if (!start || !start.closest) return;
-    if (start.closest(INTERACTIVE)) return;              // 위젯 안은 긋지 않는다
+    if (offLimits(start)) return;                        // 위젯 안은 긋지 않는다
 
     var anchor = start.closest("[data-hl]");
     if (!anchor || !phone.contains(anchor)) return;

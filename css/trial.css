@@ -858,7 +858,10 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
    ------------------------------------------------------------
    One idea runs through every page: a syllable is not a picture,
    it is a BOX with two seats. 子音 = amber seat, 母音 = rose seat.
-   The same two colours mark the letter cards, the read drills,
+   From 과 10 a third seat opens under them — 받침 = blue seat — and
+   it is a position, not a new letter class: the same consonants sit
+   there, with different jobs (silent ㅇ becomes ng).
+   The same colours mark the letter cards, the read drills,
    the words and the write-in guides, so the learner stops seeing
    a squiggle and starts seeing structure.
 
@@ -871,8 +874,9 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
   --c-ink: #96690d;
   --v-bg: #ffd7e5;   /* 母音 seat */
   --v-ink: #bf1b5c;
-  --b-bg: #cfe3ff;   /* 받침 seat — never taught in the trial, only previewed
-                        on the curriculum page as "this is what comes later" */
+  --b-bg: #cfe3ff;   /* 받침 seat — the third position, taught in 과 10.
+                        Previewed on the curriculum page before that. */
+  --b-ink: #1a4f8f;
 }
 
 /* ---------- anatomy block: the glyph sitting in its two seats ---------- */
@@ -913,6 +917,29 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
 .blk.lr .zone.v { inset: 0 0 0 46%; align-items: flex-end; background: var(--v-bg); color: var(--v-ink); }
 .blk.tb .zone.c { inset: 0 0 50% 0; align-items: flex-start; background: var(--c-bg); color: var(--c-ink); }
 .blk.tb .zone.v { inset: 50% 0 0 0; align-items: flex-end; background: var(--v-bg); color: var(--v-ink); }
+
+/* Three seats (과 10 · 받침). The bottom slot is a POSITION, not a new kind
+   of letter — it holds a consonant — so it gets its own fill rather than
+   reusing the amber one: 산 painted amber-rose-amber reads as two consonant
+   seats and hides the very thing the page is naming.
+
+   The floor starts at 62%, not at a tidy two-thirds. A hangul glyph does not
+   fill its em box: measured at these sizes the ink runs ~22–75% of the block,
+   so the 받침's ink sits at 57–75% and a 68% line cuts straight through it —
+   the one stroke the page is pointing at ends up half in the wrong seat.
+   Re-measure before changing the type size here.
+
+   The 子音/母音 labels move to the TOP of their bands for the same reason.
+   In a two-seat block they hang at the floor of a full-height zone, far
+   under the glyph; squeezed into the upper 62% they land inside the ink and
+   the glyph paints over them. パッチム keeps the floor — its band is empty
+   down there. */
+.blk.lrb .zone.c { inset: 0 54% 38% 0; align-items: flex-start; background: var(--c-bg); color: var(--c-ink); }
+.blk.lrb .zone.v { inset: 0 0 38% 46%; align-items: flex-start; background: var(--v-bg); color: var(--v-ink); }
+.blk.tbb .zone.c { inset: 0 0 69% 0; align-items: flex-start; background: var(--c-bg); color: var(--c-ink); }
+.blk.tbb .zone.v { inset: 31% 0 38% 0; align-items: flex-start; background: var(--v-bg); color: var(--v-ink); }
+.blk.lrb .zone.b,
+.blk.tbb .zone.b { inset: 62% 0 0 0; align-items: flex-end; background: var(--b-bg); color: var(--b-ink); }
 
 .blk .glyph {
   position: absolute;
@@ -1261,8 +1288,11 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
 /* letter cards: the glyph sits in its coloured seat(s) */
 .letter-card > .korean.seat-lr,
 .letter-card > .korean.seat-tb,
+.letter-card > .korean.seat-lrb,
+.letter-card > .korean.seat-tbb,
 .letter-card > .korean.seat-v,
-.letter-card > .korean.seat-c {
+.letter-card > .korean.seat-c,
+.letter-card > .korean.seat-b {
   flex: 0 0 74px;
   height: 74px;
   display: grid;
@@ -1569,6 +1599,24 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
 .seat-tb.seat-tb { background: linear-gradient(180deg, var(--c-bg) 0 50%, var(--v-bg) 50%); }
 .seat-v.seat-v   { background: var(--v-bg); }
 .seat-c.seat-c   { background: var(--c-bg); }
+.seat-b.seat-b   { background: var(--b-bg); }
+
+/* …and the same two splits with a 받침 under them. The top pair keeps its
+   own geometry and is squeezed into the upper 62%, so a block that gains a
+   받침 is visibly the same block with a floor added, not a different
+   diagram. 62% is measured against where the glyph's ink actually falls —
+   see the note on .blk.lrb above before touching it. */
+.seat-lrb.seat-lrb {
+  background:
+    linear-gradient(90deg, var(--c-bg) 0 46%, var(--v-bg) 46%) 0 0 / 100% 62% no-repeat,
+    var(--b-bg);
+}
+
+.seat-tbb.seat-tbb {
+  background:
+    linear-gradient(180deg, var(--c-bg) 0 50%, var(--v-bg) 50%) 0 0 / 100% 62% no-repeat,
+    var(--b-bg);
+}
 
 /* ---------- responsive ---------- */
 @media (max-width: 480px) {
@@ -1630,6 +1678,12 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
   --ending-bg:  #ffe2cc;   /* 이에요 / 예요 — the sentence ending */
   --ending-mid: #ffbe92;
   --ending-ink: #b2591c;
+
+  /* 예습 지문에서 「이 낱말은 아래 띠에 뜻이 있다」 를 말하는 판의 색.
+     위의 셋과 달리 문법 범주가 아니라 안내라, 글자색으로는 쓰지 않고
+     면으로만 깔린다. 알파가 낮은 것은 면이 획보다 훨씬 넓기 때문이다 —
+     같은 밝기로 깔면 글자를 덮는다. #8fbce8 을 .34 로 깐 값이다. */
+  --key-plate: rgba(143, 188, 232, .34);
 }
 
 /* ---------- the two pieces, inline inside a sentence ---------- */
@@ -1837,6 +1891,10 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
   display: grid;
   gap: var(--item-gap);
   margin-top: 24px;
+  /* The lesson stays a 480px phone column even inside a wide desktop browser.
+     Rule equations therefore respond to this component's real width, not to
+     the browser viewport (which may be more than 1000px wide). */
+  container-type: inline-size;
 }
 
 /* The box is an equation read left to right — syllable → the form it takes —
@@ -1847,6 +1905,8 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
 .bt-box {
   display: grid;
   justify-items: center;
+  width: 100%;
+  min-width: 0;
   gap: 15px;
   padding: 22px 16px 20px;
   border: 1px solid var(--gray-200);
@@ -1858,6 +1918,7 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
 .bt-eq {
   display: flex;
   align-items: center;
+  max-width: 100%;
   gap: 18px;
 }
 
@@ -1969,6 +2030,8 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
    say. It is the biggest coloured thing on the page, which is correct —
    it is the answer the rule produces. */
 .bt-out {
+  min-width: 0;
+  max-width: 100%;
   padding: 8px 18px;
   border-radius: 12px;
   background: var(--topic-bg);
@@ -1976,7 +2039,11 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
   font-size: 34px;
   font-weight: 900;
   line-height: 1.1;
-  white-space: nowrap;   /* 이에요 breaking across two lines is not a pill */
+  /* One Korean word such as 이에요 must never split between syllables, but a
+     genuinely long phrase may wrap at its authored space instead of pushing
+     the whole equation outside the card. */
+  white-space: normal;
+  word-break: keep-all;
 }
 
 .bt-head {
@@ -2226,8 +2293,10 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
    the box now leads with the answer. */
 .section > .payoff + .combi { margin-top: 24px; }
 
-@media (max-width: 480px) {
-  /* the box is one centred column at every width — only the type steps down */
+@container (max-width: 420px) {
+  /* The box is one centred column at every width — only the type steps down.
+     This used to be @media (max-width: 480px), which missed the fixed-width
+     phone column whenever it was previewed inside a wide desktop browser. */
   .bt-syl { width: 94px; height: 94px; font-size: 54px; }
   /* A pair of stems is the widest thing the equation ever carries — nearly
      twice a single one — so it is the case that decides this breakpoint.
@@ -2240,7 +2309,25 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
   .bt-eq:has(.bt-syls) { gap: 11px; }
   .bt-out { padding: 7px 15px; font-size: 30px; }
   .bt-ex { font-size: 16px; }
+}
+
+@media (max-width: 480px) {
   .combi-nouns > span { font-size: 12px; }
+}
+
+/* A real 320–360px phone leaves roughly 250–290px inside the section after
+   page margins and padding. Keep the same left-to-right equation there, but
+   step all four width contributors down together: tiles, gaps, arrow, result. */
+@container (max-width: 300px) {
+  .bt-box { padding-inline: 10px; }
+  .bt-syl { width: 72px; height: 72px; font-size: 42px; }
+  .bt-syls > .bt-syl { width: 40px; height: 40px; font-size: 24px; }
+  .bt-syls { gap: 3px; }
+  .bt-syls > .sep { font-size: 18px; }
+  .bt-eq { gap: 8px; }
+  .bt-eq:has(.bt-syls) { gap: 5px; }
+  .bt-arrow { font-size: 20px; }
+  .bt-out { padding: 6px 8px; font-size: 22px; }
 }
 
 /* ============================================================
@@ -2608,6 +2695,50 @@ body.teaching .section-subtitle + .tutor-note {
   word-break: keep-all;
 }
 
+/* ---- 이어서 물어볼 것 ----
+   자유 대화 장에서 튜터가 하는 일의 대부분은 다음 질문을 고르는 것이다.
+   장에 인쇄된 질문은 하나뿐이고, 대답이 세 마디에서 끝나면 그다음 3분은
+   튜터가 그 자리에서 지어내야 한다 — 그래서 여기 노트는 "무엇을 하라"
+   한 줄에서 끝나지 않고, 바로 읽을 수 있는 파생 질문 두셋을 함께 든다.
+
+   노트 안에 머무는 것이 요점이다. 파생 질문이 블루-200 밖으로 나가면
+   학생 화면에 다섯 개의 질문이 한꺼번에 뜨고, 한 장 한 질문이 무너진다.
+
+   .tn-body 로 한 번 감싸는 이유: 노트는 [튜터만 배지][내용] 가로 flex 라,
+   설명 줄과 목록을 그냥 넣으면 배지 옆에 나란히 세 칸으로 선다. */
+.tn-body { min-width: 0; }
+
+.tn-cap {
+  display: block;
+  margin-top: 9px;
+  opacity: .7;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.tn-more {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 설명 줄보다 한 단계 굵다 — 이 줄들만 소리 내어 읽는 것이라, 눈이
+   먼저 걸려야 하는 쪽이 여기다. */
+.tn-more li {
+  position: relative;
+  padding-left: 12px;
+  font-weight: 700;
+}
+
+.tn-more li + li { margin-top: 3px; }
+
+.tn-more li::before {
+  content: "·";
+  position: absolute;
+  left: 2px;
+  font-weight: 900;
+}
+
 /* answers surface the way .slot does in the pattern lessons: present
    for the tutor, never loud — a ghost of the answer inside the blank.
 
@@ -2862,14 +2993,20 @@ button.opt-row:active { transform: scale(.99); }
   word-break: keep-all;
 }
 
+/* 아래 여백이 반드시 있어야 한다. 목록이 `margin-top: auto` 로 카드 바닥에
+   붙는데, auto 는 "남는 자리를 다 가져간다" 는 뜻이지 "최소 이만큼" 이 아니다.
+   두 카드는 그리드에서 키가 같아지므로 남는 자리는 긴 쪽 내용이 정하고,
+   그 내용의 높이는 폰트가 정한다 — 그래서 브라우저마다 이 선이 부제에 5px 까지
+   달라붙었다가 넉넉해졌다가 했다. 바닥이 필요하면 바닥을 적어야 한다. */
 .opt-row.pick .opt-sub {
   margin-top: 4px;
+  margin-bottom: 18px;
   font-size: 13.5px;
 }
 
 .opt-row.pick .opt-note {
   width: 100%;
-  margin-top: auto;                     /* 목록은 카드 바닥에 붙는다 */
+  margin-top: auto;                     /* 남으면 목록은 카드 바닥에 붙는다 */
   padding-top: 14px;
 }
 
@@ -2900,7 +3037,7 @@ button.opt-row:active { transform: scale(.99); }
 .opt-row.on .opt-note li { color: var(--gray-500); }
 
 /* ============================================================
-   예습 지문 · 한 문장이 한 줄
+   예습 지문 · 한 문장이 한 줄, 누르면 열린다
    ------------------------------------------------------------
    지문은 예습에서 이미 읽고 온 것이라, 수업에서는 참고 자료다.
    그래서 문단이 아니라 문장 단위로 끊어 둔다 — 궁금한 문장을 짚어
@@ -2908,36 +3045,51 @@ button.opt-row:active { transform: scale(.99); }
    있어야 한다. 번역은 눌러야 나온다: 옆에 늘 붙어 있으면 눈이
    한국어를 건너뛰고 일본어만 읽는다.
 
-   테두리는 주지 않는다. 줄마다 상자를 치면 글이 아니라 목록으로
-   읽히고, 읽어 오는 물건이라는 성격이 사라진다.
+   회색 판을 걷어 냈다. 판은 지문을 한 덩어리의 종이로 묶어 주지만,
+   그 대가로 일곱 줄이 판의 무늬가 되어 눌러 볼 것으로 보이지 않는다.
+   이 장에서 줄이 하는 일은 읽히는 것이 아니라 눌리는 것이므로, 묶는
+   것보다 누를 수 있어 보이는 쪽이 먼저다.
 
-   「訳」 같은 표시도 붙이지 않는다. 한 줄만 눌러 보면 바로 아는 일이고,
-   일곱 줄마다 붙은 표시는 지문을 읽는 동안 내내 눈에 걸린다.
+   그렇다고 줄마다 선을 긋고 단추를 얹으면 반대쪽으로 넘어간다. 실선
+   여섯에 동그란 꺾쇠 일곱이면 잉크가 지문보다 많아지고, 읽어 오는
+   물건이 설정 화면처럼 보인다. 눌린다는 말은 한 번만 하면 된다:
+   줄 사이는 선이 아니라 공기로 벌리고, 표시는 테 없는 작은 꺾쇠
+   하나로 줄인다. 나머지는 손가락이 닿을 때 — 그때 그 줄에만 옅은
+   바탕이 깔린다. 쉬고 있을 때의 잉크가 적을수록 지문으로 읽힌다.
+
+   여는 것은 번역만이 아니다. 그 줄의 어려운 낱말이 같이 나온다 —
+   막히는 자리는 문장이 아니라 낱말이고, 낱말은 그 줄 안에 있을 때
+   찾을 필요가 없다. 장 밑에 단어장을 따로 두면 줄과 목록 사이를
+   눈이 오간다.
+
+   한 번에 한 줄만 열린다(freetalk-activities.js). 그래서 열린 줄이 곧
+   "지금 보는 줄" 이고, 포인터의 빨간 링이 그 줄에 그대로 얹힌다 —
+   여는 손과 짚는 손이 같다(spotlight.js 의 POINTS).
    ============================================================ */
-/* 지문은 한 덩어리의 종이다. 흰 바탕에 흰 줄을 얹으면 어디까지가 지문인지
-   보이지 않아서, 회색 판 위에 줄을 놓는다 — 이 시트가 타일을 얹을 때 쓰는
-   바로 그 바탕이다. 열린 줄만 흰색으로 떠오른다. */
 .sents {
   display: grid;
   grid-template-columns: minmax(0, 1fr);   /* 자동 최소폭이 판을 넓히지 못하게 */
   gap: 0;
-  margin-top: 24px;
-  padding: 6px;
-  border-radius: 14px;
-  background: var(--gray-50);
+  margin-top: 20px;
 }
 
 /* flex 인 이유: <button> 은 자식들을 익명 상자에 담아 가운데로 몰아넣는다.
    닫혀 있을 때는 자식이 하나뿐이라 티가 안 나다가, 번역이 열려 두 줄이 되는
-   순간 좁은 쪽이 가운데로 밀린다 — 누를 때마다 글이 옆으로 움직이던 이유다. */
-.sent {
+   순간 좁은 쪽이 가운데로 밀린다 — 누를 때마다 글이 옆으로 움직이던 이유다.
+
+   .sents 로 한정하는 것이 중요하다. 이 시트 아래쪽(안내 페이지의 「핵심 패턴」
+   도식)에 같은 이름의 .sent 가 하나 더 있다 — 낱말 칩을 가로로 세우는 줄이다.
+   맨 .sent 로 쓰면 여기의 flex-direction: column 이 그 줄까지 잡아서, 칩 셋이
+   세로로 쌓인 채 나온다. 뒤에 오는 규칙이 display 만 다시 잡으므로 방향은
+   끝까지 안 돌아온다. */
+.sents .sent {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   width: 100%;
-  padding: 9px 12px 10px;
+  padding: 11px 13px 12px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 14px;
   background: transparent;
   font-family: inherit;
   text-align: left;
@@ -2946,8 +3098,27 @@ button.opt-row:active { transform: scale(.99); }
   transition: background .12s;
 }
 
-.sent .s-ko {
-  display: block;
+/* 줄과 줄은 선이 아니라 공기로 갈린다. 문장이 두세 줄이라 이 정도 사이는
+   벌어져 보이고, 여섯 개의 실선은 안 그려도 된다. */
+.sents .sent + .sent { margin-top: 6px; }
+
+/* 손이 닿는 줄에만 바탕이 깔린다. 쉬고 있을 때는 아무 잉크도 안 쓰면서
+   「이건 눌린다」 를 말하는 자리다. 눌린 순간에도 같이 뜨므로 마우스가
+   없는 화면에서도 한 번은 보인다. */
+@media (hover: hover) {
+  .sents .sent:hover { background: var(--gray-50); }
+}
+.sents .sent:active { background: var(--gray-50); }
+
+.s-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.s-ko {
+  flex: 1 1 auto;
+  min-width: 0;
   color: #1c1c1c;
   font-size: 17px;
   font-weight: 700;
@@ -2955,33 +3126,170 @@ button.opt-row:active { transform: scale(.99); }
   word-break: keep-all;
 }
 
-/* 일본어는 띄어쓰기가 없다. keep-all 을 그대로 두면 한 문장이 통째로 한 낱말이
-   되어 줄을 못 바꾸고, 그 최소폭이 줄 카드를 판 밖으로 밀어낸다 — 번역을 여는
-   순간 그 줄만 오른쪽으로 삐져나오던 이유다. 일본어는 어디서든 끊는다. */
-.sent .s-ja {
-  display: none;
-  word-break: normal;
-  overflow-wrap: anywhere;
-  margin-top: 7px;
-  color: var(--gray-500);
-  font-size: 13.5px;
-  font-weight: 600;
-  line-height: 1.6;
-  word-break: keep-all;
+/* 「눌러서 연다」 고 말하는 꺾쇠. 테를 두르지 않는다 — 동그란 바탕을 주면
+   일곱 개의 단추가 되고, 단추는 지문 옆에서 지문보다 무겁다. 획 두 개면
+   같은 말을 하고, 한 번 읽히고 나면 배경으로 물러난다.
+   「訳」 같은 글자 표시는 여전히 안 붙인다: 일곱 줄마다 붙은 낱말은 읽는
+   내내 눈에 걸리지만, 같은 자리에 같은 크기로 선 도형은 안 그렇다.
+   열린 줄에서만 초록이 된다 — 초록은 이 덱에서 「고른 것」이라는 뜻이고,
+   지금 보고 있는 줄이 정확히 그것이다. */
+.s-mark {
+  position: relative;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  margin-top: 8px;
+  transition: transform .16s;
 }
 
-.sent:focus { outline: none; }
+.s-mark::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: 0;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--gray-400);
+  border-bottom: 1.5px solid var(--gray-400);
+  transform: rotate(45deg);
+  transition: border-color .12s;
+}
 
-.sent:focus-visible {
+.sents .sent.open .s-mark { transform: rotate(180deg); }
+.sents .sent.open .s-mark::before { border-color: var(--green-500); }
+
+/* 열린 줄은 흰 종이 위로 떠오른다. 테두리를 outline 이 아니라 inset 그림자로
+   그리는 이유가 하나 있다 — 포인터의 빨간 링이 outline 을 쓰는데, 여기서
+   outline 을 잡으면 더 좁은 선택자가 이겨서 빨간 링이 회색으로 바뀐다. */
+.sents .sent.open,
+.sents .sent.open:hover {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--gray-200), 0 3px 10px rgba(28, 28, 28, .07);
+}
+
+/* 짚힌 줄에서는 이 무르기가 비켜서야 한다. 안 그러면 「누른 줄에만 링이
+   안 뜨는」 증상이 나온다 — 줄은 tabindex 를 가진 블록이라 누르는 순간
+   포커스를 받고, 이 규칙이 .is-spot 보다 좁아서(0,2,1 대 0,1,0) 빨간 링을
+   그 자리에서 지워 버린다. 딴 데를 눌러 포커스가 풀리는 찰나에 링이 잠깐
+   보였다가 포인터가 꺼지며 같이 사라지는 것도 같은 원인이다.
+
+   lesson-card.css 의 ringHost 주석이 칸에서 겪은 일과 같은 사고다: 거기서는
+   칸마다 :focus 에서 outline 을 지우는 바람에 정작 쓰는 사람 화면에서만
+   링이 벗겨졌고, 링을 칸이 아니라 칸이 든 블록에 두르는 것으로 풀었다.
+   줄은 블록 자신이 짚히는 자리라 그 우회로가 닿지 않는 유일한 경우다.
+   그래서 여기서 직접 비켜선다. */
+.sents .sent:focus:not(.is-spot) { outline: none; }
+
+/* 키보드로 짚어 온 줄에 두르는 초록 테. 짚힌 줄에서는 이쪽도 비켜선다 —
+   같은 줄에 초록과 빨강이 겹치면 좁은 쪽인 이 규칙이 이겨서, 둘이 같이 본다는
+   신호(빨강)가 나 혼자 보는 신호(초록)에 덮인다. 어차피 그 줄은 링으로 이미
+   또렷하므로 포커스 표시를 잃지도 않는다. */
+.sents .sent:focus-visible:not(.is-spot) {
   outline: 2px solid var(--green-500);
   outline-offset: -2px;
 }
 
-.sent.open {
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(28, 28, 28, .06);
+.s-open { display: none; }
+.sents .sent.open .s-open { display: block; }
+
+/* 일본어는 띄어쓰기가 없다. keep-all 을 그대로 두면 한 문장이 통째로 한 낱말이
+   되어 줄을 못 바꾸고, 그 최소폭이 줄 카드를 판 밖으로 밀어낸다 — 번역을 여는
+   순간 그 줄만 오른쪽으로 삐져나오던 이유다. 일본어는 어디서든 끊는다. */
+.s-ja {
+  display: block;
+  margin-top: 11px;
+  color: var(--gray-500);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.6;
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
-.sent.open .s-ja { display: block; }
+
+/* 그 줄의 단어장. 덱의 다른 데서 낱말을 세우는 방식은 하나뿐이라(.hint-chip
+   의 흰 알약) 여기도 같은 어휘를 쓴다 — 같은 물건이 장마다 다른 모양으로
+   나오면 학생은 그때마다 이게 뭔지 다시 읽어야 한다.
+
+   알약을 카드 안에 띄우면 상자가 세 겹이 된다는 걱정은 실재한다. 그래서
+   띄우지 않고 카드 바닥에 붙는 띠로 만든다 — `.answer-box > .hint` 가 이미
+   쓰는 수법 그대로다. 띠는 카드에 붙어 있으니 새 상자가 아니고, 회색 바탕
+   위에서는 칩의 테두리를 지울 수 있어(「테 하나 줄면 상자 하나 준다」)
+   결국 늘어나는 선이 하나도 없다. 음수 마진으로 카드의 안쪽 여백을 되물어
+   양 끝까지 뺀다 — 그 값은 .sents .sent 의 padding 과 맞물려 있다. */
+.s-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px -13px -12px;
+  padding: 10px 13px 11px;
+  border-top: var(--line);
+  border-radius: 0 0 14px 14px;
+  background: var(--gray-50);
+}
+
+/* .hint-chip 을 그대로 베끼지 않고 같은 값을 쓴다 — 여기 칩은 한국어와
+   일본어 두 조각이 한 알약에 든 형태라 .hint 의 마크업과 다르다. 회색 띠
+   위에 서므로 테는 없고 흰 바탕만으로 선다. */
+.s-w {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--gray-500);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.s-w b {
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+
+/* 단어장에 오른 낱말은 본문에서도 물들어 있다 — 어느 줄에서 온 말인지, 그
+   줄 어디에 박혀 있는지를 눈으로 잇는 자리다. 활용된 꼴 그대로 물들인다
+   (당첨되다 → 「당첨되」면): 학생이 실제로 만나는 것은 사전형이 아니다.
+
+   빨강이 아니라 옅은 파랑이다. 빨강이던 시절의 변명은 「형태가 다르다」
+   였다 — 포인터의 빨강은 블록을 두르는 3px 획이고 이쪽은 글자 뒤의 면이니
+   같은 색을 나눠 써도 된다는 것. 실제로는 안 나눠졌다. 채도 높은 빨강은
+   면으로 깔려도 앞으로 튀어나와서, 스무 개가 한 장에 깔리면 눈이 문장보다
+   얼룩을 먼저 훑고 화면에 하나뿐이어야 할 포인터의 빨강도 같이 묽어진다.
+   파랑은 같은 밝기에서 뒤로 물러나므로 판으로 깔리기에 맞는 색이다.
+
+   판이 밑줄을 이겼다. 같은 파랑을 점선 밑줄로 긋는 안을 나란히 놓고 봤는데,
+   밑줄은 글줄을 안 흔드는 대신 「눌러서 뜻을 본다」 는 신호가 너무 조용했다.
+   지문을 훑으면서 낱말이 몇 개 표시돼 있는지 세어지는 쪽이 이 장에는 맞다.
+   판의 원래 문제(얼룩)는 형태가 아니라 빨강이 원인이었고, 색을 파랑으로
+   내리는 것으로 거의 사라졌다. 밑줄안은 지워 없애지 않고 옮겨 두었다:
+   _archive/korean/trial/_experiments/trial-4-article-mark-variations.html
+   (그 파일은 자기 style 블록에 밑줄 규칙을 들고 있어 혼자서도 열린다.)
+
+   형광 라임을 안 쓰는 이유는 남는다: 그건 튜터가 그 자리에서 직접 긋는
+   것이라, 미리 칠해 두면 자기가 그은 자국과 구별이 안 된다. 라임이 이 판
+   위에 겹쳐 그어지면 라임이 이긴다 — 방금 그은 쪽이 위다.
+
+   글자색은 건드리지 않는다. 판만 깔아야 형광펜과 같은 문법으로 읽힌다. */
+.s-key {
+  background: var(--key-plate);
+  padding: 0 1px;
+  border-radius: 3px;
+  /* 줄바꿈을 넘어가도 줄마다 제 모서리를 갖는다 — mark.hl 과 같은 처리 */
+  -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
+}
+
+/* 튜터가 이 낱말 위에 형광펜을 그으면 판을 통째로 물린다. 겹쳐 두면 두 판의
+   여백과 모서리가 어긋나 라임 자국 둘레에 분홍 실선이 생긴다 — 그으려던 것도
+   아니고 물들이려던 것도 아닌 자국이다. 방금 그은 쪽이 위라는 규칙 그대로,
+   펜이 닿은 낱말에서는 펜만 남는다. */
+.s-key:has(mark.hl) { background: none; padding: 0; }
 
 /* ============================================================
    질문 카드 · 그 장의 주인공

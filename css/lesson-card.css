@@ -259,7 +259,7 @@ h1 .title-ja,
 }
 
 /* ---- one sentence per line, its translation directly under it ----
-   Built at load by interactive/script-lines.js, and only when the Korean and
+   Built at load by runtime/js/script-lines.js, and only when the Korean and
    Japanese split into the same number of sentences. A run-on script gave the
    tutor no way to see which sentence they were on, and gave the learner no way
    to tell which Japanese belonged to which Korean. The gap between pairs is
@@ -1407,16 +1407,27 @@ strong {
    column everywhere, so a 2-up grid only ever looks cramped. one idea
    reads top-to-bottom, roomy and instantly scannable. */
 
-/* ---------- shared spotlight (interactive/spotlight.js) ----------
+/* ---------- shared spotlight (runtime/js/spotlight.js) ----------
    The tutor's "look here" pointer, mirrored to the learner. A ring that
    reads on every page background — white cards, lime brand pages, dark
-   transition pages. Only the visual lives here; the sync is in the script. */
+   transition pages. Only the visual lives here; the sync is in the script.
+
+   The ring is the whole treatment: one red line, steady, and nothing else.
+   It used to carry a soft outer glow that throbbed on a 1.15s loop, on the
+   theory that motion is what makes a pointer findable. In use it was the
+   opposite. The ring lands on a block the two of them are about to READ —
+   a sentence, a question, a word — and it stays lit for as long as that
+   reading takes, so the throb sat in the corner of the eye for a minute at
+   a time and turned "look here" into an alarm. Motion earns its place when
+   something has just changed and might be missed; this never had that job,
+   because the tutor is speaking the moment they point. Nothing in any deck
+   asks for a pulse now, so nothing here provides one — if some future thing
+   genuinely needs motion, it should say so at its own call site rather than
+   inherit it from the pointer every block shares. */
 .is-spot {
   border-radius: 10px;
   outline: 3px solid #ff2d55;
   outline-offset: 3px;
-  box-shadow: 0 0 0 6px rgba(255, 45, 85, .20);
-  animation: spotPulse 1.15s ease-in-out infinite;
   /* The ring is drawn OUTSIDE the block, in space the next sibling owns — and
      these decks stack opaque cards edge to edge, so a later sibling paints over
      the lower half of the ring and it reads as clipped. Lift the lit block for
@@ -1426,25 +1437,16 @@ strong {
   position: relative;
   z-index: 2;
 }
-@keyframes spotPulse {
-  0%, 100% { box-shadow: 0 0 0 6px rgba(255, 45, 85, .20); }
-  50%      { box-shadow: 0 0 0 11px rgba(255, 45, 85, .08); }
-}
 [data-spot] { cursor: pointer; }
 /* a field keeps its own caret cursor — it is entered, not pointed at */
 input[data-spot], textarea[data-spot] { cursor: auto; }
-@media (prefers-reduced-motion: reduce) { .is-spot { animation: none; } }
 
 /* Some blocks sit flush inside a card that clips its overflow — a header strip
    at the top of a rounded answer box. An outward ring there gets sliced down to
    a stray red line along the one free edge, so the script measures for it and
    turns the ring inward instead: same red, drawn just inside the block's own
-   edge. The glow goes with it — it would be clipped by the same box. */
-.is-spot.is-spot-in {
-  outline-offset: -2.5px;
-  box-shadow: none;
-  animation: none;
-}
+   edge. */
+.is-spot.is-spot-in { outline-offset: -2.5px; }
 
 /* Stepping into a text box rings the BLOCK that holds it — the question card,
    the speech bubble, the feedback row — not the box itself. Two reasons, and
@@ -1454,18 +1456,15 @@ input[data-spot], textarea[data-spot] { cursor: auto; }
    look at while typing. And a ring squeezed onto a 60px slot only points at the
    slot, where ringing the block says which question is being answered.
 
-   It takes the same red — this is still "look here", not a second attention
-   colour — but steady rather than pulsing. A throb reads as an alarm, and this
-   one sits under the writer's eyes for as long as the typing lasts; the pulse
-   is for a block you glance at once. */
-.is-spot.is-spot-field {
-  box-shadow: 0 0 0 5px rgba(255, 45, 85, .14);
-  animation: none;
-}
+   No style of its own any more. The class existed to take the pulse off the
+   one block that stayed lit for minutes at a time; now that nothing pulses,
+   the plain ring is already what it wanted. spotlight.js still marks the
+   host with it, so there is somewhere to hang a field-only treatment if one
+   is ever needed — but an empty rule would be a lie about that. */
 /* fallback, if a field ever turns up with no block around it to ring */
 input.is-spot, textarea.is-spot { outline-width: 2.5px; outline-offset: 2px; }
 
-/* ---------- shared highlighter (interactive/highlight.js) ----------
+/* ---------- shared highlighter (runtime/js/highlight.js) ----------
    A marker stroke over the text, mirrored to the other screen. Persistent —
    it stays until someone taps it off — so it reads as ink, not as a pointer:
    no pulse, no outline, nothing competing with the spotlight ring above.
@@ -1492,7 +1491,7 @@ mark.hl {
    it — there the stroke dims to a band the white text sits on top of */
 .transition-page mark.hl { background: rgba(181, 253, 76, .32); }
 
-/* ---------- shared tutor notes (interactive/tutor-notes.js) ----------
+/* ---------- shared tutor notes (runtime/js/tutor-notes.js) ----------
    One free-typing box per page, sitting under the blue script. Empty it is
    invisible to everyone; the tutor sees it in teaching mode to write into,
    and the moment it holds anything both screens show it.
@@ -1617,7 +1616,7 @@ body.teaching .note-input:placeholder-shown { background-color: transparent; }
 
 /* ---------- 참! 잘했어요 stamp ----------
    The tutor's praise stamp, mirrored to the learner. Only the visual lives
-   here; who may stamp and what is shared is in interactive/stamp.js. */
+   here; who may stamp and what is shared is in runtime/js/stamp.js. */
 
 /* Hidden by default wherever it sits — the lone overlay, and the copy inside
    the pager button until teaching mode turns that one on. */

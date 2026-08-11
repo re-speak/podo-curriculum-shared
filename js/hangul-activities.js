@@ -33,7 +33,12 @@
   /* ---------- (2) syllable builder ---------- */
   var CHO = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
   var JUNG = ["ㅏ","ㅐ","ㅑ","ㅒ","ㅓ","ㅔ","ㅕ","ㅖ","ㅗ","ㅘ","ㅙ","ㅚ","ㅛ","ㅜ","ㅝ","ㅞ","ㅟ","ㅠ","ㅡ","ㅢ","ㅣ"];
-  var TALL = ["ㅏ","ㅓ","ㅣ"];      // vertical vowels sit to the right
+  /* vertical vowels sit to the right. The y- and e-vowels (과 7) are the
+     same shapes with one more stroke, so they take the same seat — left out,
+     a keypad paints ㅑ into the bottom half and contradicts the placement
+     rule the deck taught in 과 1. Compound vowels (과 8) are neither, and
+     want a layout of their own rather than a line here. */
+  var TALL = ["ㅏ","ㅐ","ㅑ","ㅒ","ㅓ","ㅔ","ㅕ","ㅖ","ㅣ"];
 
   function compose(c, v) {
     return String.fromCharCode(0xac00 + (CHO.indexOf(c) * 21 + JUNG.indexOf(v)) * 28);

@@ -83,6 +83,23 @@
      늦게 뜨므로 여기서는 아직 없고, 빈 메모는 상대 화면에서 아예 안 보인다. */
   var FIELD = "input.slot-input,input.space-input,textarea.free-input,textarea.fb-in";
 
+  /* 예습 지문 — 위젯 안에 들어앉은 "내용".
+
+     줄 자체는 자기 클릭(여는 동작)을 가지지만, 그 클릭이 곧 「이 문장이요」다.
+     칸이 focusin 으로 켜지는 것과 같은 예외이고 이유도 같다: 여는 손과 짚는
+     손을 나눌 수가 없다. 나눠 두면 튜터는 줄을 열고 나서 그 줄을 다시 짚어야
+     한다.
+
+     번역과 낱말은 아예 컨트롤이 아니다 — 그냥 글인데, 줄이 sync 옵션이라
+     WIDGET 에 통째로 걸려서 함께 예외로 둔다. 이게 있어야 「블록 먼저, 부품
+     나중」이 이 장에서도 성립한다: 줄을 한 번 눌러 문장을 켜고, 열린 칸의
+     낱말을 다시 눌러 그 낱말 하나로 좁힌다. 없으면 줄 전체 아니면 아무것도,
+     둘 중 하나뿐이었다.
+
+     예외를 좁게 두는 것이 요점이다. 알약·칩·키패드처럼 "고르는" 컨트롤은
+     그대로 뺀다. 저기서는 누르는 것이 답이지 자리가 아니다. */
+  var POINTS = ".sents .sent, .sents .sent .s-ja, .sents .sent .s-w";
+
   /* 칸이 켜지면 링은 칸이 아니라 칸이 든 블록에 두른다 — 문제 상자 하나, 말풍선
      하나, 피드백 줄 하나.
      칸에 직접 두르지 않는 이유가 둘이다. 칸마다 :focus 에서 outline 을 지우고
@@ -113,10 +130,10 @@
   // 주소가 한 종류여야 상태가 { spot } 하나로 남는다.
   (function stamp() {
     var n = 0;
-    var nodes = phone.querySelectorAll(SPOT + "," + FIELD);
+    var nodes = phone.querySelectorAll(SPOT + "," + FIELD + "," + POINTS);
     for (var i = 0; i < nodes.length; i++) {
       var el = nodes[i];
-      if (!el.matches(FIELD) && el.closest(WIDGET)) continue;
+      if (!el.matches(FIELD) && !el.matches(POINTS) && el.closest(WIDGET)) continue;
       el.setAttribute("data-spot", String(n++));
     }
   })();
@@ -191,7 +208,7 @@
   document.addEventListener("click", function (e) {
     var t = e.target;
     if (!t || !t.closest) return;
-    if (t.closest(WIDGET)) return;
+    if (t.closest(WIDGET) && !t.closest(POINTS)) return;
 
     /* 누른 자리에서 바깥으로, 짚을 수 있는 것을 다 모은다 — 안쪽부터 순서대로.
        규칙 하나에서 두 가지가 나온다: 처음 누르면 가장 바깥(블록 전체)이 켜지고,
