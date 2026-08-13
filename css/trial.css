@@ -1958,6 +1958,22 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
   font-size: 45px;
 }
 
+/* A dictionary form is one source word, not a set of alternative syllables.
+   Keep it grouped in one neutral tile; reserve .bt-syl / .bt-syls for rules
+   where the final syllable's 받침 or vowel is itself the visual evidence. */
+.bt-word {
+  display: grid;
+  place-items: center;
+  min-height: 78px;
+  padding: 0 18px;
+  border-radius: 14px;
+  background: var(--gray-50);
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .bt-syl {
   position: relative;
   isolation: isolate;   /* keeps the floor's z-index:-1 inside this box */
@@ -2095,9 +2111,63 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
 .batchim.ending-rule .bt-out { background: var(--ending-bg); color: var(--ending-ink); }
 .batchim.ending-rule .bt-ex b { color: var(--ending-ink); }
 
+/* ---------- pattern meaning: one compact bilingual teaching surface ----------
+   The dark page only moves the story forward. Meaning and use live here, on
+   the first teaching page, where the tutor can read the Korean and point to
+   its exact Japanese counterpart. The inset Japanese band makes that handoff
+   visible without creating a second lesson box. */
+.section-subtitle.pattern-meaning {
+  display: grid;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.pattern-meaning .meaning-kicker {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 9px 16px 8px;
+  border-bottom: 1px solid rgba(62, 91, 151, .12);
+  color: var(--blue-ink);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+
+.pattern-meaning .meaning-kicker small {
+  color: rgba(62, 91, 151, .6);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.section-subtitle.pattern-meaning > .ko {
+  padding: 12px 16px 9px;
+  font-size: 15.5px;
+  line-height: 1.5;
+}
+
+.section-subtitle.pattern-meaning > .ja {
+  margin: 0 10px 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(62, 91, 151, .1);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, .68);
+  color: rgba(28, 28, 28, .62);
+  font-size: 12.5px;
+  line-height: 1.5;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+body.teaching .section-subtitle.pattern-meaning:has(+ .tutor-note) {
+  overflow: hidden;
+}
+
 /* ---------- 원어민 팁: the same sentence, the way a native says it ----------
-   Every tip page in the decks teaches a SWAP — 돼요? becomes 될까요?, 저는
-   drops out — and the card they used never drew it. It showed two example
+   Some tip pages teach a genuine one-way SWAP — a redundant 저는 drops out,
+   for example — and the card they used never drew it. It showed two example
    boxes each holding only the finished form, so the learner read a result
    and had to reconstruct the move that produced it. Around them sat a
    bordered .card inside the page card inside a filled .example-card: three
@@ -2172,6 +2242,97 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
   font-size: 13px;
   font-weight: 900;
   line-height: 1;
+}
+
+/* ---------- 원어민 팁: two valid choices, selected by situation ----------
+   This is deliberately not a .swap. Neither expression is being corrected or
+   discarded, so both cards carry the same weight and the middle marker names
+   the decision the learner is actually making: which situation are we in? */
+.nuance-compare {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.nuance-choice {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.nuance-when {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-100);
+  color: #575753;
+  line-height: 1.35;
+}
+
+.nuance-when b {
+  font-size: 12.5px;
+  font-weight: 850;
+}
+
+.nuance-when small {
+  color: var(--gray-500);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.nuance-choice > .korean {
+  display: block;
+  padding: 13px 16px 4px;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.nuance-choice > .translation {
+  display: block;
+  margin: 0;
+  padding: 0 16px 14px;
+  color: var(--gray-500);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.nuance-or {
+  display: grid;
+  grid-template-columns: minmax(16px, 1fr) auto minmax(16px, 1fr);
+  align-items: center;
+  gap: 10px;
+  color: var(--gray-500);
+  text-align: center;
+}
+
+.nuance-or::before,
+.nuance-or::after {
+  content: "";
+  height: 1px;
+  background: var(--gray-200);
+}
+
+.nuance-or > span {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 900;
+}
+
+.nuance-or small {
+  font-size: 9.5px;
+  font-weight: 700;
 }
 
 /* ---------- 漢字 bridge: the equivalence IS the point ---------- */
@@ -2298,6 +2459,7 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
      This used to be @media (max-width: 480px), which missed the fixed-width
      phone column whenever it was previewed inside a wide desktop browser. */
   .bt-syl { width: 94px; height: 94px; font-size: 54px; }
+  .bt-word { min-height: 62px; padding-inline: 14px; font-size: 36px; }
   /* A pair of stems is the widest thing the equation ever carries — nearly
      twice a single one — so it is the case that decides this breakpoint.
      Measured on a 360px column: any bigger and the page scrolls sideways,
@@ -2315,12 +2477,22 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
   .combi-nouns > span { font-size: 12px; }
 }
 
+/* A normal 480px lesson column leaves about 378px inside the rule card. Long
+   dictionary forms and their spoken result still have to share that one-line
+   equation, so step only those two text tiles down before they can establish a
+   wider min-content width. The 300px rule below remains the narrow-phone size. */
+@container (max-width: 390px) {
+  .bt-word { font-size: 28px; }
+  .bt-out { font-size: 24px; }
+}
+
 /* A real 320–360px phone leaves roughly 250–290px inside the section after
    page margins and padding. Keep the same left-to-right equation there, but
    step all four width contributors down together: tiles, gaps, arrow, result. */
 @container (max-width: 300px) {
   .bt-box { padding-inline: 10px; }
   .bt-syl { width: 72px; height: 72px; font-size: 42px; }
+  .bt-word { min-height: 40px; padding-inline: 8px; font-size: 24px; }
   .bt-syls > .bt-syl { width: 40px; height: 40px; font-size: 24px; }
   .bt-syls { gap: 3px; }
   .bt-syls > .sep { font-size: 18px; }
@@ -2715,6 +2887,11 @@ body.teaching .section-subtitle + .tutor-note {
   font-size: 11px;
   font-weight: 800;
 }
+
+/* Most freetalk notes now open directly with the usable follow-up questions.
+   Do not reserve the gap that separated this label from an instruction line
+   when there is no instruction line above it. */
+.tn-body > .tn-cap:first-child { margin-top: 0; }
 
 .tn-more {
   margin: 4px 0 0;

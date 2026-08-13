@@ -194,9 +194,11 @@ window.lessonSync = window.lessonSync || {
     input.dataset.answer = answer;
     transferSync(slot, input);
     slot.replaceWith(input);
-    // 시트의 max-width 는 낱말용이라 한 문장짜리 칸을 잘라 낸다.
-    // 폭은 붙인 뒤에 잰다 — 그래야 상속된 글꼴이 잡힌다.
-    input.style.maxWidth = "none";
+    // 시트의 9em 상한은 문장짜리 칸을 지나치게 짧게 자르지만, 상한을 완전히
+    // 없애면 답이 긴 대화 칸이 좁은 화면에서 말풍선 자체를 밀어낸다. 정답 폭을
+    // 그대로 쓰되 현재 answer-box보다 넓어지지는 않게 한다. 앞 문장 뒤에 자리가
+    // 없으면 칸 전체가 다음 줄로 내려가고, 어느 화면에서도 가로 스크롤은 생기지 않는다.
+    input.style.maxWidth = "100%";
     sizeToAnswer(input);
     sized.push(input);
     wireInput(input);

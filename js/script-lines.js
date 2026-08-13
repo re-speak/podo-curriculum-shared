@@ -32,16 +32,40 @@
   var KO_END = ".!?";
   var JA_END = "。！？";
 
+  /* 인용 부호. 짝이 분명한 것만 센다 — 곧은 따옴표(" ')는 여는 것과 닫는 것이
+     같은 글자라 깊이를 셀 수 없으므로 일부러 뺐다. 그쪽은 아래 spaced 규칙이 받는다. */
+  var QUOTE_OPEN  = "“‘「『";   // “ ‘ 「 『
+  var QUOTE_CLOSE = "”’」』";   // ” ’ 」 』
+
   /* 문장부호를 문장에 붙인 채로 자른다. 부호 뒤의 공백은 먹어 없앤다.
-     정규식의 lookbehind 를 쓰지 않는 건 지원이 고르지 않아서다. */
-  function split(text, enders) {
-    var out = [], cur = "";
+     정규식의 lookbehind 를 쓰지 않는 건 지원이 고르지 않아서다.
+
+     이 덱들은 가르치는 표현을 문장 안에 그대로 인용한다 — 도대체 왜 그랬어?는,
+     (으)ㄹ래요?로, 어디 있어요?를. 부호만 보고 자르면 그 물음표에서 문장이
+     끊겨, 한국어만 문장 수가 부풀고 짝짓기가 통째로 취소된다. 일본어는 전각
+     부호만 세기 때문에 같은 자리에서 끊기지 않아서, 어긋남이 한쪽에서만 생겼다.
+
+     그래서 두 가지를 더 본다:
+       depth   인용 부호 안의 부호는 문장을 끝내지 않는다. 양쪽 모두에 적용된다.
+       spaced  한국어는 문장 사이를 띄우므로, 부호 뒤에 공백이나 줄 끝이 와야
+               문장이 끝난 것으로 본다. 인용된 표현 뒤에는 조사가 공백 없이
+               바로 붙는다(그랬어?는). 일본어는 문장 사이를 띄우지 않으니
+               이 조건을 걸지 않는다. */
+  function split(text, enders, spaced) {
+    var out = [], cur = "", depth = 0;
     for (var i = 0; i < text.length; i++) {
-      cur += text[i];
-      if (enders.indexOf(text[i]) >= 0) {
-        while (i + 1 < text.length && /\s/.test(text[i + 1])) cur += text[++i];
-        if (cur.trim()) out.push(cur.trim());
-        cur = "";
+      var ch = text[i];
+      cur += ch;
+      if (QUOTE_OPEN.indexOf(ch) >= 0) depth++;
+      else if (QUOTE_CLOSE.indexOf(ch) >= 0 && depth > 0) depth--;
+
+      if (depth === 0 && enders.indexOf(ch) >= 0) {
+        var ends = i + 1 >= text.length || /\s/.test(text[i + 1]);
+        if (!spaced || ends) {
+          while (i + 1 < text.length && /\s/.test(text[i + 1])) cur += text[++i];
+          if (cur.trim()) out.push(cur.trim());
+          cur = "";
+        }
       }
     }
     if (cur.trim()) out.push(cur.trim());
@@ -49,12 +73,16 @@
   }
 
   document.querySelectorAll(".section-subtitle").forEach(function (box) {
+    // The pattern meaning component intentionally keeps one Korean teaching
+    // block over one Japanese inset; its own layout owns that pairing.
+    if (box.classList.contains("pattern-meaning")) return;
+
     var ko = box.querySelector(":scope > .ko");
     var ja = box.querySelector(":scope > .ja");
     if (!ko || !ja) return;                       // 한쪽만 있는 박스는 그대로
 
-    var k = split(ko.textContent, KO_END);
-    var j = split(ja.textContent, JA_END);
+    var k = split(ko.textContent, KO_END, true);
+    var j = split(ja.textContent, JA_END, false);
 
     // 나눌 것이 없거나, 짝이 맞지 않으면 손대지 않는다
     if (k.length < 2 || k.length !== j.length) return;

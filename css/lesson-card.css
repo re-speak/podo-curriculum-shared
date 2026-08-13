@@ -938,6 +938,8 @@ p {
 .dialogue {
   display: grid;
   gap: var(--item-gap);
+  width: 100%;
+  min-width: 0;
 }
 
 .card + .dialogue {
@@ -950,6 +952,8 @@ p {
   display: flex;
   gap: 10px;
   align-items: flex-start;
+  width: 100%;
+  min-width: 0;
 }
 
 .turn.me {
