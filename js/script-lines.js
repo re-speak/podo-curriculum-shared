@@ -76,6 +76,11 @@
     // The pattern meaning component intentionally keeps one Korean teaching
     // block over one Japanese inset; its own layout owns that pairing.
     if (box.classList.contains("pattern-meaning")) return;
+    /* 니즈 파악 세 장도 마찬가지다. 여기 실린 것은 튜터가 한 문장씩 읽어 내려가는
+       대사가 아니라 학습자에게 던지는 질문 하나라서, 일본어 한 덩어리 위에
+       한국어 한 줄이 붙는 것이 그 장의 짜임이다(.needs-jp). 문장마다 짝을 지어
+       세우면 큰 글씨와 작은 글씨가 번갈아 나와 질문이 두 번 물어보는 꼴이 된다. */
+    if (box.closest(".needs-jp")) return;
 
     var ko = box.querySelector(":scope > .ko");
     var ja = box.querySelector(":scope > .ja");

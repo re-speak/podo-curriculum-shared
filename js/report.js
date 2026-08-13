@@ -1170,25 +1170,14 @@
     return Math.max(MIN_MONTHS, Math.round(lessons / (perWeek * 4.3)));
   }
 
-  /* ---- 목표 카드 속은 고른 이유만 남긴다 ----
-     카드(=거리)는 넷 그대로고, 그 안의 「할 수 있게 되는 일」 만 이 사람의
-     이유로 좁힌다. 아직 이유를 고르지 않았으면 여섯 줄을 다 펴는 대신
-     한 줄로 그 사실을 말한다 — 남의 이유가 여섯 줄씩 네 장이면, 정작
-     고를 것(거리)이 그 밑에 묻힌다.
-     원격 선택도 보드가 옵션을 합성 클릭해 오므로 양쪽이 같은 줄을 본다. */
-  function renderGoalCards() {
-    var items = [].slice.call(document.querySelectorAll(".glc-i[data-why]"));
-    if (!items.length) return;
-    var any = pick.why.some(function (w) { return WHY_COURSE[w]; });
-    items.forEach(function (it) {
-      it.classList.toggle("hide", pick.why.indexOf(it.getAttribute("data-why")) < 0);
-    });
-    document.querySelectorAll(".glc-e").forEach(function (e) { e.classList.toggle("hide", any); });
-  }
+  /* 목표 카드는 이제 도착 레벨 하나만 말한다. 예전에는 카드마다 「그 레벨이
+     나한테 뭔데?」 를 고른 이유별로 한 줄씩 폈는데(.glc-i[data-why]), 고를 것은
+     넷인데 읽을 것이 열여덟이 되어 고르는 힘이 전부 읽는 데 들어갔다.
+     이유는 여전히 계획을 정한다 — 리포트의 추천 코스가 그것을 쓴다. 다만
+     고르는 화면에서까지 되풀이하지는 않는다. */
 
   function render() {
     syncFreq();
-    renderGoalCards();
     renderLevelPick();
     renderAxSteps();
     renderLevel();
