@@ -739,14 +739,17 @@
      왼쪽 굽이는 둘째 띠의 왼쪽을 먹는다. 점이 굽이에 서면 라벨을 그 반대편
      안쪽으로 밀어 붙인다. 셋째 띠(길 아래)는 끝까지 비어 있다.
      자리는 점마다 고정이므로 라벨도 점마다 하나씩 미리 세워 두고, 나중에 글자만
-     갈아 끼운다 — 계획이 바뀔 때마다 SVG 를 다시 짓지 않아도 된다. */
+     갈아 끼운다 — 계획이 바뀔 때마다 SVG 를 다시 짓지 않아도 된다.
+     y 는 기준선이라 글자 크기를 줄이면 라벨이 통째로 내려앉는다. 띠 안에서
+     보이는 자리(글자의 윗줄)를 그대로 두려고, 줄어든 어센트만큼(3.7) 세 줄을
+     함께 끌어올려 둔 값이다. */
   function capPlace(i) {
-    if (i === 0) return { x: 14.06, y: 31, a: "middle" };          // 지금
-    if (i === LAST_DOT) return { x: 254.879, y: 112, a: "end" };   // 도착
+    if (i === 0) return { x: 14.06, y: 27.3, a: "middle" };          // 지금
+    if (i === LAST_DOT) return { x: 254.879, y: 108.3, a: "end" };   // 도착
     var x = ROAD_DOTS[i][0], y = ROAD_DOTS[i][1];
-    if (y < 30) return x > 232 ? { x: 232, y: 31, a: "end" } : { x: x, y: 31, a: "middle" };
-    if (y < 70) return x < 31 ? { x: 31, y: 70, a: "start" } : { x: x, y: 70, a: "middle" };
-    return { x: x, y: 112, a: "middle" };
+    if (y < 30) return x > 232 ? { x: 232, y: 27.3, a: "end" } : { x: x, y: 27.3, a: "middle" };
+    if (y < 70) return x < 31 ? { x: 31, y: 66.3, a: "start" } : { x: x, y: 66.3, a: "middle" };
+    return { x: x, y: 108.3, a: "middle" };
   }
 
   /* 뼈대는 한 번만 짓는다 — 길, 일곱 점, 일곱 후광, 일곱 라벨 자리. 어느 점이
@@ -774,12 +777,6 @@
     g.appendChild(fill);
     dotFracs = measureDots(fill);
 
-    /* 지금 선 자리의 무른 후광. 점마다 하나씩 두고 켜고 끈다 — 하나를 옮기면
-       길을 따라가는 게 아니라 허공을 가로질러 날아간다. */
-    var halos = ROAD_DOTS.map(function (d) {
-      var c = el("circle", { "class": "rd-halo", cx: d[0], cy: d[1], r: 13 });
-      g.appendChild(c); return c;
-    });
     /* 크기·색은 전부 trial.css 가 쥔다. 여기서 r 을 한 번 적어 두는 것은 CSS
        기하 속성을 모르는 브라우저용 바닥값이다. */
     var dots = ROAD_DOTS.map(function (d) {
@@ -791,7 +788,7 @@
       var e = el("text", { "class": "rd-cap", x: q.x, y: q.y, "text-anchor": q.a });
       g.appendChild(e); return e;
     });
-    roadEls = { fill: fill, dots: dots, halos: halos, caps: caps };
+    roadEls = { fill: fill, dots: dots, caps: caps };
   }
 
   /* 마디를 일곱 자리에 배치한다. 자리는 코스 길이의 누적이고, 분모는 목표까지
@@ -829,35 +826,28 @@
     roadFracs = stopAt.map(function (d) { return dotFracs[d]; });
   }
 
-  /* 지금 밟은 점까지 초록이 차오르고, 점은 셋 중 하나가 된다.
-     지나온 점은 길과 같은 초록으로 채워 길에 녹여 버린다 — 차오른 초록 위에
-     흰 도넛이 남으면 길이 그 자리에서 끊겨 보인다. 지금 선 점만 흰 속에
-     초록 테를 두르고 후광을 켠다. 도착점은 아직 못 갔어도 초록 테를 두른다:
+  /* 초록은 「지금 펴 놓은 카드가 길의 어디냐」 다 — 그 코스가 시작하는 자리가
+     아니라 끝나는 자리까지 찬다. 카드와 길이 한 문장이 되는 건 이쪽이다:
+     「한글 읽기 · 1/4」 을 보고 있으면 길에서도 첫 구간이 통째로 칠해져 있고,
+     「다음」 을 누르면 카드와 함께 초록이 한 구간 더 나아간다. 시작점까지만
+     칠하면 첫 카드에서는 초록이 아예 없어, 카드가 길의 어느 토막인지 말해 주는
+     것이 하나도 없다.
+     지나온 점은 초록에 잠겨 사라지고(.done), 도착점만 테를 두른 채 남는다 —
      지도에 목적지가 찍혀 있어야 길이 어디로 가는지 읽힌다. */
   function setRoadStep(step, animate) {
-    var target = roadFracs[step], from = roadShown;
+    var target = roadFracs[Math.min(step + 1, roadFracs.length - 1)], from = roadShown;
     if (roadRaf) { cancelAnimationFrame(roadRaf); roadRaf = null; }
     /* 점은 걸음이 아니라 차오른 초록을 따른다. 목표 칸을 보고 한 번에 갈아
        끼우면 초록이 아직 기어가는 450ms 동안 초록 점들이 회색 길 위에 떠 있다.
        파도가 지나간 자리부터 하나씩 물드니, 되짚어 갈 때도 그대로 되감긴다. */
-    // 지금 서 있는 걸음이 일곱 자리 중 어디인가 — 0칸은 출발점, 그 뒤는 코스 자리
-    var atDot = stopAt[Math.max(0, Math.min(step, stopAt.length - 1))];
-    var isStop = {};
-    stopAt.forEach(function (d) { isStop[d] = true; });
     var paint = function (f) {
       roadShown = f;
       roadEls.fill.setAttribute("stroke-dashoffset", (1 - f).toFixed(4));
       roadEls.dots.forEach(function (c, i) {
-        var here = f >= dotFracs[i] - 1e-4;
-        /* 등급(minor·goal)은 자리가 정하는 것이라 상태와 함께 매번 다시 쓴다 —
-           class 를 통째로 갈아 끼우므로 여기서 빠뜨리면 첫 칠에 등급이 날아간다.
-           이름 없는 눈금도 파도가 지나가면 똑같이 자국을 남긴다: 코스가 서지
-           않았을 뿐 지나온 길인 것은 같다. */
-        c.setAttribute("class", "rd-dot" + (isStop[i] ? "" : " minor") +
-          (i === LAST_DOT ? " goal" : "") +
-          (!here ? "" : i === atDot ? " now" : " done"));
-        roadEls.halos[i].setAttribute("class",
-          "rd-halo" + (here && i === atDot ? " on" : ""));
+        /* 지났느냐 아니냐, 그리고 도착점이냐 — 점이 아는 것은 이 둘뿐이다.
+           class 를 통째로 갈아 끼우므로 등급도 상태와 함께 매번 다시 쓴다. */
+        c.setAttribute("class", "rd-dot" + (i === LAST_DOT ? " goal" : "") +
+          (f >= dotFracs[i] - 1e-4 ? " done" : ""));
       });
     };
     /* 숨은 탭에서는 rAF 가 돌지 않는다 — 애니메이션에 점까지 실려 있으니,

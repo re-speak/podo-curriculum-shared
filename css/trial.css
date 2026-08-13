@@ -1246,9 +1246,15 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
   gap: 5px;
 }
 
+/* A sentence set at 18px, not the 22px a WORD in the two-column .known-row
+   takes. 22px is `.section-title`'s size, so a stack of these read as a page of
+   headlines rather than as the exchange being promised — in Korean as much as
+   in English. Nothing here was ever near wrapping in Korean (the longest goal
+   line is 208px in a 342px row), so this is a legibility choice, not a fitting
+   one; English is the language it also happens to rescue, at 320px. */
 .known.lines .known-row .k {
   width: auto;
-  font-size: 22px;
+  font-size: 18px;
 }
 
 /* ---------- payoff counter ---------- */
@@ -2354,9 +2360,16 @@ body.teaching .section-subtitle.pattern-meaning:has(+ .tutor-note) {
   text-align: center;
 }
 
+/* 26px, not the 33px this started at. Each side of the row gets 155px, and
+   Pretendard sets full-width glyphs at .923em — so 33px fit the 2–4 kanji a
+   Korean deck puts here and nothing longer. A katakana loanword runs 5–7
+   glyphs and overflowed: スーツケース broke mid-word and its row rendered 37px
+   taller than its neighbours. 26px carries 6 glyphs, which is the working
+   ceiling for this component; a 7-glyph loanword still wraps, so prefer
+   スーツケース over コンピューター when the choice is free. */
 .br-cn {
   color: var(--gray-500);
-  font-size: 33px;
+  font-size: 26px;
   font-weight: 800;
   line-height: 1.1;
 }
@@ -2365,14 +2378,14 @@ body.teaching .section-subtitle.pattern-meaning:has(+ .tutor-note) {
 .br-eq { color: var(--ink); font-size: 22px; font-weight: 900; line-height: 1; }
 
 .br-ko {
-  font-size: 33px;
+  font-size: 26px;
   font-weight: 800;
   line-height: 1.1;
 }
 
 /* the reading under the Korean here is a .yomi like every other one in the
    deck, so it takes its colour — it only sits closer and a step larger,
-   because the Korean above it is 33px */
+   because the Korean above it is 26px */
 .br-ko small {
   display: block;
   margin-top: 5px;
@@ -5248,8 +5261,12 @@ body.teaching .tcon { display: block; margin: 0 0 28px; }
 .tiles { display: flex; gap: 8px; margin-top: 8px; }
 .tile { flex: 1 1 0; min-width: 0; padding: 12px 14px; border-radius: 12px; background: var(--green-100); }
 .tile-k { display: block; color: var(--green-500); font-size: 16px; font-weight: 700; line-height: 24px; letter-spacing: -.02em; }
-.tile-v { display: flex; align-items: center; gap: 11px; margin-top: 4px; }
-.tile-v img { width: 37px; height: 37px; }
+/* 칸의 값 줄은 높이가 고정이다 — 달력(37×39.34)과 문서(37×37) 두 그림의 세로가
+   달라서, 자유롭게 두면 칸 두 장의 키가 2px 어긋난다. */
+.tile-v { display: flex; align-items: center; gap: 11px; height: 41px; margin-top: 4px; }
+/* 세로는 그림이 정한다. 둘 다 37 로 눌러 두면 preserveAspectRatio="none" 인
+   달력이 세로로 찌그러진다. */
+.tile-v img { flex: none; width: 37px; height: auto; }
 .tile-v b { font-size: 22px; font-weight: 700; line-height: 32px; letter-spacing: -.02em; }
 
 /* 추천 코스 길 */
@@ -5261,33 +5278,29 @@ body.teaching .tcon { display: block; margin: 0 0 28px; }
    초록이 차오르는 것과 점이 자라는 것이 같은 박자로 움직인다. */
 .rd-track { stroke: #e8eae1; }
 .rd-fill { stroke: var(--green-500); }
+/* 아직 안 지난 자리는 어디든 같은 흰 점이다. 정거장과 이름 없는 눈금을 크기로
+   갈라 두면, 코스가 몇 개냐에 따라 같은 길이 매번 다른 리듬으로 보인다 —
+   길에 박힌 점의 수는 고정이므로 점의 생김새도 고정인 편이 길로 읽힌다. */
 .rd-dot {
-  r: 6; fill: #fff; stroke: #e8eae1; stroke-width: 3.5;
+  r: 6; fill: #fff; stroke-width: 0;
   transition: r .3s ease, fill .3s ease, stroke .3s ease, stroke-width .3s ease;
 }
-/* 코스가 서지 않은 자리는 이름 없는 눈금으로 내린다 — 그림의 점 수는 고정이고
-   코스는 그중 몇 자리에만 서므로, 나머지가 정거장과 같은 무게면 안 된다 */
-.rd-dot.minor { r: 4; stroke-width: 3; }
-.rd-dot.minor.done { r: 2; }
-/* 도착점은 늘 서 있다 — 크기로 목적지라고 말한다 */
-.rd-dot.goal { r: 8.5; stroke: var(--green-500); stroke-width: 4; }
-/* 지나온 마디는 길 안으로 들어가 흰 점 하나만 남긴다. 길 밖으로 나오지 않는 것이
-   핵심이다 — 반지름(선 굵기 12 → 6)을 넘기는 순간 곧은 길에는 물집이 잡히고
-   굽이에서는 곡선이 우그러진다. 자국까지 지우면 지나온 자리가 아예 없던 자리가
-   되므로, 길 안에 들어갈 만큼만 남긴다. */
-.rd-dot.done { r: 3; fill: #fff; stroke-width: 0; }
-/* 지금 선 자리 · 눈금이든 정거장이든 밟고 있으면 제 크기로 선다 */
-.rd-dot.now { r: 8; fill: #fff; stroke: var(--green-500); stroke-width: 4.5; }
-.rd-dot.goal.now { r: 10; stroke-width: 5; }
-.rd-halo { fill: var(--green-500); opacity: 0; transition: opacity .3s ease; }
-.rd-halo.on { opacity: .15; }
-/* 라벨 · 지금과 ⅓·⅔ 는 같은 기준선의 한 단, 도착만 한 단 위 */
-.rd-cap { font-weight: 800; letter-spacing: -.02em; }
-.rd-cap.start { font-size: 11px; fill: var(--ink); }
-.rd-cap.wp { font-size: 10px; font-weight: 700; fill: var(--gray-500); }
-/* 도착 눈금은 초록과 굵기만으로도 끝이라고 말한다 — 크기까지 얹으면 바로 위
-   도착점을 밀어내고, 둘이 서로 붙어 한 덩어리로 뭉친다 */
-.rd-cap.dest { font-size: 12px; fill: var(--green-500); }
+.rd-dot.minor { r: 6; }
+/* 도착점은 늘 서 있다 — 초록 테로 목적지라고 말한다 */
+.rd-dot.goal { r: 6; stroke: var(--green-500); stroke-width: 2.2; }
+/* 지나온 마디는 초록에 잠겨 사라진다. 흰 자국을 남기면 차오른 초록 위에 점이
+   떠서, 다 지난 구간이 아직 밟는 자리처럼 보인다 — 여기서 「지나왔다」 를 말하는
+   것은 점이 아니라 초록의 길이다. */
+.rd-dot.done, .rd-dot.minor.done, .rd-dot.now { r: 0; }
+.rd-dot.goal.done, .rd-dot.goal.now { r: 6; stroke-width: 2.2; }
+/* 라벨 · 세 줄 모두 같은 크기, 색만 다르다. 지금은 먹색, 지나갈 눈금은 회색,
+   도착만 초록. 크기까지 셋으로 갈라 놓으면 눈금이 서열로 읽힌다.
+   길이 뷰박스 270 을 370px 로 늘려 그리므로, 화면에서 12px 로 서려면 여기서는
+   12 × 270 / 370 = 8.76 이다. */
+.rd-cap { font-size: 8.76px; font-weight: 700; letter-spacing: 0; }
+.rd-cap.start { fill: var(--ink); }
+.rd-cap.wp { fill: var(--gray-500); }
+.rd-cap.dest { fill: var(--green-500); }
 /* 「아직 안 골랐어요」 는 비어 있다는 알림이지 이 페이지의 주된 행동이 아니다.
    trial.css 의 .rep-jump 는 라임 채움 + 먹색 오프셋 그림자라 카드 안에서 가장
    큰 소리를 내는데, 둘 다 은퇴한 Podo Bold 의 것이고 라임은 브랜드 크롬이지
@@ -5318,59 +5331,89 @@ body.teaching .tcon { display: block; margin: 0 0 28px; }
 /* ---------- ③ 이대로만 따라오면 돼요 · 기간과 길이 한 덩어리 ----------
    개월 · 레슨 · 슬라이더 · 길 네 칸이 가로·세로 모두 3 이음매로 붙는다. 한 축만
    넓거나 길만 떨어져 있으면 「세 칸 + 한 칸」 으로 갈려서, 카드가 한 덩어리가
-   아니라 블록 두 개로 읽힌다. 바깥 네 귀만 12 로 두고 붙는 쪽은 전부 4 로 죽여,
-   네 칸이 한 판에서 잘려 나온 조각이 되게 한다.
+   아니라 블록 두 개로 읽힌다.
+   귀는 넷 다 12 로 남긴다 — 이음매를 3 까지 좁혀 놓으면 붙어 있다는 말은 간격이
+   이미 다 하고 있고, 거기서 안쪽 귀까지 죽이면 네 칸이 한 덩어리가 아니라
+   「잘못 잘린 한 장」 으로 보인다. 같은 반지름이 네 번 반복되는 편이 오히려
+   한 벌로 읽힌다.
    원안: trial/_experiments/trial-report-plan-merge-variations.html ① */
 .pm-fuse .tiles { margin-top: 0; gap: 3px; }
-.pm-fuse .tiles .tile:first-child { flex: 1 1 0; border-radius: 12px 4px 4px 4px; }
-.pm-fuse .tiles .tile:last-child { flex: 0 0 auto; border-radius: 4px 12px 4px 4px; }
-/* 가운데 칸이라 네 귀가 다 죽는다 */
-.pm-fuse .pm-freq { margin-top: 3px; padding: 12px 14px; border-radius: 4px; background: var(--green-100); }
+/* 두 칸은 정확히 반씩이다. 오른쪽을 글자 폭에 맡기면 「약 80회」 와 「약 110회」
+   에서 이음매의 자리가 달라져, 같은 카드가 값에 따라 다른 레이아웃이 된다. */
+.pm-fuse .tiles .tile { flex: 1 1 0; border-radius: 12px; }
+.pm-fuse .pm-freq { margin-top: 3px; padding: 12px 14px; border-radius: 12px; background: var(--green-100); }
 .pm-fuse.hide { display: none; }
-/* 길이 덩어리의 마지막 칸 — 아래 두 귀만 12 */
+/* 길이 덩어리의 마지막 칸 — 앞의 세 칸과 같은 귀, 같은 3 이음매.
+   .road-card 의 값이 뒤에 와서 이기므로 여기서 한 단 더 좁혀 붙든다. */
 .pm-road { margin-top: 3px; }
-.pm-road .road { margin-top: 0; border-radius: 4px 4px 12px 12px; }
+.pm-card .road-card .road { margin-top: 3px; border-radius: 12px; }
 /* 코스 카드는 이 덩어리에 속하지 않는다 — 길이 어디까지인지를 말하는 칸이
-   아니라, 지금 선 마디가 무슨 코스인지를 따로 펴는 카드다. */
-.pm-card .curli { margin-top: 8px; }
+   아니라, 지금 선 마디가 무슨 코스인지를 따로 펴는 카드다. 그래서 이음매(3)가
+   아니라 칸과 칸 사이(12)만큼 떨어져 선다. */
+.pm-card .road-card .curli { margin-top: 12px; }
 
-/* 레일 · 말풍선을 떼고 눈금 일곱을 깔았다 */
-.pm-inline { display: flex; align-items: center; gap: 14px; }
-.pm-rail .freq-h { flex: none; margin: 0; }
+/* 레일 · 말풍선을 떼고 눈금 일곱을 깔았다.
+   칸의 짜임은 옆의 「목표 달성까지」 와 같다: 이름이 초록으로 한 줄, 그 밑에 값이
+   큰 글씨로 한 줄. 전에는 「매주 3회」 가 한 줄에 붙어 있어서, 나란히 선 세 칸
+   중 이 칸만 짜임이 달랐다 — 값을 찾는 눈이 세 번째 칸에서 한 번 멈춘다. */
+.pm-rail .freq-k {
+  display: block; color: var(--green-500);
+  font-size: 16px; font-weight: 700; line-height: 24px; letter-spacing: -.02em;
+}
+.pm-rail .freq-row { display: flex; align-items: center; gap: 11px; height: 41px; margin-top: 4px; }
+/* 값은 옆 칸의 「9개월」 과 같은 크기·같은 먹색이다. 숫자만 초록으로 띄우면
+   초록이 이름과 값 두 가지를 뜻하게 된다. */
+.pm-rail .freq-h,
+.pm-rail .freq-h b { flex: none; margin: 0; color: var(--ink);
+  font-size: 22px; font-weight: 700; line-height: 32px; letter-spacing: -.02em; }
 /* .freq-slot 은 말풍선 자리로 위를 24px 비워 둔다 — 말풍선을 뗐으니 그 자리도
-   함께 거둔다. 안 그러면 레일만 위에 남고 손잡이가 밑으로 내려간다. */
-.pm-rail .freq-slot { position: relative; flex: 1 1 auto; min-width: 0; margin-top: 0; padding-top: 0; }
+   함께 거둔다. 아래 12 는 눈금 밑에 깔린 숫자 일곱의 자리다. */
+.pm-rail .freq-slot { position: relative; flex: 1 1 auto; min-width: 0; margin: 0; padding: 0 0 12px; }
 /* 레일은 트랙이 아니라 슬롯이 그린다 — 눈금을 레일 뒤에 깔아야 해서다 */
 .pm-rail .freq-slot::before {
   content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 4px;
   border-radius: 999px; background: #d6e9c9; z-index: 0;
 }
-/* 눈금 일곱 · 손잡이 반지름(7px)만큼 안으로 들여야 손잡이 한가운데와 만난다.
-   높이 0 인 줄 위에 세로 가운데로 걸어 두면 눈금 길이를 바꿔도 레일 한가운데를
-   그대로 지난다. 손잡이가 선 눈금은 손잡이 테가 덮는다 — 삐져나오면 먹색 점
-   위아래로 꼬리가 남아 십자로 읽힌다. */
+/* 눈금 일곱과 숫자 일곱은 손잡이가 실제로 멈추는 자리에 선다. 손잡이는 양 끝에서
+   반지름(7px)만큼 물러나 서므로, 레인지를 좌우 12 들여 놓고 눈금을 19(=12+7)
+   에서 시작하면 셋의 한가운데가 한 자리에서 만난다 — 하나라도 어긋나면 손잡이가
+   눈금 옆에 서고, 숫자가 가리키는 칸이 하나씩 밀린다. */
 .pm-ticks {
-  position: absolute; left: 7px; right: 7px; top: 14px; height: 0; z-index: 0;
+  position: absolute; left: 19px; right: 19px; top: 14px; height: 0; z-index: 0;
   display: flex; align-items: center; justify-content: space-between;
 }
 .pm-ticks i { width: 2px; height: 8px; border-radius: 1px; background: #cfe3c1; }
+/* 숫자는 눈금과 같은 자리에 중심을 두려고 14px(=손잡이 지름) 칸 안에 가운데로
+   선다. 폭을 글자에 맡기면 「1」 과 「7」 의 폭 차이만큼 양 끝이 안으로 말린다. */
+.pm-nums {
+  position: absolute; left: 12px; right: 12px; bottom: 0; z-index: 0;
+  display: flex; justify-content: space-between;
+}
+.pm-nums i {
+  width: 14px; font-style: normal; text-align: center;
+  font-size: 10px; font-weight: 800; line-height: 12px; color: #b6c8a9;
+}
 /* 레일과 눈금이 자리 잡은 레이어(absolute)는 손잡이보다 위에 그려진다 —
-   띄워 주지 않으면 레일이 먹색 손잡이를 가로질러 십자로 보인다. */
+   띄워 주지 않으면 레일이 손잡이를 가로질러 십자로 보인다. */
 .pm-rail .freq-range {
-  display: block; width: 100%; height: 28px; margin: 0; position: relative; z-index: 1;
+  display: block; width: calc(100% - 24px); height: 28px; margin: 0 12px;
+  position: relative; z-index: 1;
   -webkit-appearance: none; appearance: none; background: none; cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 .pm-rail .freq-range::-webkit-slider-runnable-track { height: 28px; background: none; }
 .pm-rail .freq-range::-moz-range-track { height: 28px; background: none; }
+/* 손잡이는 고른 값이라 초록이다 — 눈금(연두)과 레일(연두) 위에서 유일하게 진한
+   것이 「지금 여기」 가 된다. 눈금은 지름 14 인 손잡이 밑에 완전히 묻히므로
+   따로 가려 줄 테가 필요 없다. */
 .pm-rail .freq-range::-webkit-slider-thumb {
   -webkit-appearance: none; appearance: none; margin-top: 7px;
   width: 14px; height: 14px; border: 0; border-radius: 50%;
-  background: var(--ink); box-shadow: 0 0 0 4px var(--green-100);
+  background: var(--green-500); box-shadow: none;
 }
 .pm-rail .freq-range::-moz-range-thumb {
   width: 14px; height: 14px; border: 0; border-radius: 50%;
-  background: var(--ink); box-shadow: 0 0 0 4px var(--green-100);
+  background: var(--green-500); box-shadow: none;
 }
 
 /* ---------- ④ 커리큘럼 로드맵 ---------- */
