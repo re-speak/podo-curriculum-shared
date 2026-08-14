@@ -1,16 +1,16 @@
 /* ================================================================
-   ACTIVITIES · 화이트보드 없이 손가락만으로 푸는 활동 (공유 스크립트)
+   ACTIVITIES · 화이트보드 없이 손가락만으로 푸는 활동 (정적 컨트롤)
 
-   한 과가 쓰는 활동 마크업은 이 네 가지가 전부다. 새 과를 만들 때
-   자바스크립트를 쓸 일은 없다 — 아래 클래스만 얹으면 배선은 여기가 한다.
+   레몬보드 검증기와 라이브 바인더가 같은 DOM 을 보도록 입력 컨트롤은 HTML 에
+   미리 적는다. 이 파일은 컨트롤을 새로 만들거나 바꾸지 않고, 이미 서 있는
+   컨트롤에 채점·크기·칩 이동 동작만 배선한다.
 
-     .slot            점선 알약 → 타이핑하는 칸. 안에 적힌 글자가 정답이 된다.
-                      <span class="slot" data-sync-id="p1-fill-student">이에요</span>
-     .answer-space    답이 적혀 있으면 채점하는 칸, 비어 있으면 자유 작문 칸.
-     .choice          .task-block 안의 칩 → 아래 pool 로 내려가고 .answer-space
-                      가 칩을 받는 트레이(.build-zone)가 된다. 문장 만들기.
-     .choose-row .opt 둘 중 하나를 눌러 고르기. data-correct 가 정답 쪽.
-     .mission li      체크리스트 토글.
+     input.slot-input[data-answer]   점선 알약에 타이핑. 답 길이에 맞춰 폭을 잡는다.
+     input.space-input[data-answer]  채점하는 답 칸.
+     textarea.free-input             자유 작문 칸. 쓴 만큼 자란다.
+     .build-zone[data-a]             칩을 받는 트레이. data-sync-kind="order".
+     .choose-row .opt                둘 중 하나 고르기. data-correct 가 정답 쪽.
+     .mission li                     체크리스트 토글.
 
    채점은 언제나 각자 화면에서 다시 계산한다 — 정답은 오가지 않는다.
    보드 밖(로컬에서 파일을 직접 열 때)에서는 lessonSync 가 없으므로 아무것도
@@ -33,7 +33,6 @@ window.lessonSync = window.lessonSync || {
   'use strict';
 
   var sync = window.lessonSync;
-  var MAX_TEXT = 2000;                 // 붙여넣기 한 번으로 문서가 부풀지 않게
 
   // 띄어쓰기·문장부호는 채점에서 무시한다 ("학생이에요?" == "학생이에요")
   function norm(s) { return (s || "").replace(/[\s　?？.。!！,、·~〜…]/g, ""); }
@@ -51,7 +50,7 @@ window.lessonSync = window.lessonSync || {
     return s;
   }
 
-  var reorder = new WeakMap();         // build zone -> {pool, answer, chips}
+  var reorder = new WeakMap();         // build zone -> {pool, answer, chips, reset}
 
   /* 상대 화면에서 들어온 글은 타이핑 이벤트 없이 꽂힌다 — 보드는 value 에
      바로 쓰고 input 을 쏘지 않는다. 그래서 칸의 value 만 가로채, 글이 어느
@@ -142,16 +141,6 @@ window.lessonSync = window.lessonSync || {
     grow(ta);
   }
 
-  // data-sync-id 는 살아 있는 요소 하나에만 있어야 한다. 자리를 대신하는
-  // 껍데기가 진짜 입력칸으로 바뀔 때 id 를 넘겨준다.
-  function transferSync(source, target) {
-    if (!source.dataset.syncId) return;
-    target.dataset.syncId = source.dataset.syncId;
-    if (source.dataset.syncKind) target.dataset.syncKind = source.dataset.syncKind;
-    source.removeAttribute("data-sync-id");
-    source.removeAttribute("data-sync-kind");
-  }
-
   /* 답을 실제로 그려 보고 그 너비를 잰다. 글자 수 × 상수로 어림하면 한글
      글자마다 다른 자폭이 뭉개져 30~40px 씩 남아돌고, 그 남는 폭이 한 줄에
      들어갈 칸을 아랫줄로 밀어낸다.
@@ -182,32 +171,22 @@ window.lessonSync = window.lessonSync || {
     document.fonts.ready.then(function () { sized.forEach(sizeToAnswer); });
   }
 
-  // 점선 알약(.slot) → 타이핑하는 칸. 답 길이에 맞춰 폭을 잡는다.
-  document.querySelectorAll(".slot").forEach(function (slot) {
-    var answer = slot.textContent.trim();
-    if (!answer) return;
-    var input = document.createElement("input");
-    input.type = "text";
-    input.className = "slot-input";
-    input.autocomplete = "off";
-    input.spellcheck = false;
-    input.dataset.answer = answer;
-    transferSync(slot, input);
-    slot.replaceWith(input);
-    // 시트의 9em 상한은 문장짜리 칸을 지나치게 짧게 자르지만, 상한을 완전히
-    // 없애면 답이 긴 대화 칸이 좁은 화면에서 말풍선 자체를 밀어낸다. 정답 폭을
-    // 그대로 쓰되 현재 answer-box보다 넓어지지는 않게 한다. 앞 문장 뒤에 자리가
-    // 없으면 칸 전체가 다음 줄로 내려가고, 어느 화면에서도 가로 스크롤은 생기지 않는다.
-    input.style.maxWidth = "100%";
+  // 점선 알약. 답 길이에 맞춰 폭을 잡는다. data-answer 가 없는 칸(이름을 적는
+  // 칸)은 채점할 답이 없으므로 건드리지 않는다.
+  document.querySelectorAll("input.slot-input[data-answer]").forEach(function (input) {
+    // 시트의 max-width 는 낱말용이라 한 문장짜리 칸을 잘라 낸다.
+    input.style.maxWidth = "none";
     sizeToAnswer(input);
     sized.push(input);
     wireInput(input);
   });
 
+  document.querySelectorAll("input.space-input[data-answer]").forEach(wireInput);
+  document.querySelectorAll("textarea.free-input").forEach(autoGrow);
+
   /* ---------- (3) reorder: 칩을 문장 자리에 놓는다 ----------
-     .task-block 안의 .choice 칩이 아래 pool 로 내려가고, 답 자리는
-     칩을 받는 트레이가 된다. 먼저 처리해야 아래 .answer-space 루프가
-     이 트레이를 입력칸으로 바꾸지 않는다. */
+     .task-block 안의 .choice 칩이 아래 pool 로 내려가고, 답 자리(.build-zone)가
+     칩을 받는 트레이가 된다. 트레이의 kind 와 유령 답은 HTML 에 적혀 있다. */
   function settleOrder(zone) {
     var block = reorder.get(zone);
     if (!block) return;
@@ -228,16 +207,15 @@ window.lessonSync = window.lessonSync || {
   document.querySelectorAll(".task-block").forEach(function (block) {
     var chips = [].slice.call(block.querySelectorAll(":scope > .choice"));
     if (!chips.length) return;
-    var zone = block.querySelector(".answer-space");
-    var answer = zone.textContent.trim();
-    zone.textContent = "";
-    zone.classList.add("build-zone");
-    zone.setAttribute("data-a", answer);         // 티칭 모드의 유령 답
+    var zone = block.querySelector(".build-zone");
+    if (!zone) return;
 
     /* 조각과 그것으로 짓는 문장은 한 물건이라, 트레이는 답 칸 밖이 아니라
        答 상자 안에 붙는다 — 힌트 띠와 같은 자리, 같은 회색. 칸이 상자의
        가운데 띠가 되면서 오답의 붉은 칠이 상자의 둥근 모서리에 잘리던 것도
-       같이 사라진다: 이제 위아래가 모두 각진 이웃이다. */
+       같이 사라진다: 이제 위아래가 모두 각진 이웃이다.
+       트레이에는 data-sync-id 가 없다 — 공유되는 것은 칸(.build-zone)뿐이라
+       런타임에 만들어도 정적 검증과 어긋나지 않는다. */
     var tray = document.createElement("div");
     tray.className = "chip-tray";
     var pool = document.createElement("div");
@@ -251,8 +229,10 @@ window.lessonSync = window.lessonSync || {
     tray.appendChild(reset);
     (zone.parentElement || block).appendChild(tray);
 
-    reorder.set(zone, { pool: pool, answer: answer, chips: chips, reset: reset });
-    zone.dataset.syncKind = "order";             // 아래에서 register 한다
+    // data-a 는 티칭 모드의 유령 답이자 채점 기준이다(둘 다 HTML 에 적혀 있다).
+    reorder.set(zone, {
+      pool: pool, answer: zone.getAttribute("data-a") || "", chips: chips, reset: reset
+    });
     chips.forEach(function (chip) {
       pool.appendChild(chip);
       chip.addEventListener("click", function () {
@@ -274,34 +254,6 @@ window.lessonSync = window.lessonSync || {
       // 상대 화면에는 지은 문장이 그대로 남는다.
       sync.push(zone);
     });
-  });
-
-  // 답이 적혀 있으면 채점하는 칸, 비어 있으면 자유롭게 쓰는 칸
-  document.querySelectorAll(".answer-space").forEach(function (space) {
-    if (space.classList.contains("build-zone")) return;
-    var answer = space.textContent.trim();
-    space.textContent = "";
-    space.classList.add("as-input");
-    if (answer) {
-      var input = document.createElement("input");
-      input.type = "text";
-      input.className = "space-input";
-      input.autocomplete = "off";
-      input.spellcheck = false;
-      input.dataset.answer = answer;
-      transferSync(space, input);
-      space.appendChild(input);
-      wireInput(input);
-    } else {
-      var ta = document.createElement("textarea");
-      ta.className = "free-input";
-      ta.rows = 2;
-      ta.spellcheck = false;
-      ta.maxLength = MAX_TEXT;
-      transferSync(space, ta);
-      space.appendChild(ta);
-      autoGrow(ta);
-    }
   });
 
   /* ---------- (2) tap one of two ----------
