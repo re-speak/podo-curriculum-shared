@@ -31,6 +31,19 @@
     push: function () {}
   });
 
+  /* ---- 이 화면이 누구의 것인가 ----
+     링의 색이 "누가 짚었나" 를 말한다: 튜터는 빨강, 학생은 파랑. 색이 상태와
+     함께 실려 가야 양쪽 화면이 같은 색을 그린다 — 받는 쪽이 자기 역할로 칠하면
+     학생 화면은 늘 파랑, 튜터 화면은 늘 빨강이 되어 아무 뜻도 없어진다.
+
+     역할을 읽는 자리는 페이저와 같다(window.PODO_LESSON_CONTEXT.viewerRole).
+     "학생" 이라고 앱이 명시한 화면만 학생이고, 나머지(역할이 없는 내부 검수
+     화면 포함)는 튜터로 본다 — 지금까지의 빨간 링이 그대로 기본값이다. */
+  var lessonContext = window.PODO_LESSON_CONTEXT || {};
+  var MY_ROLE =
+    String(lessonContext.viewerRole || "").trim().toLowerCase() === "student"
+      ? "student" : "tutor";
+
   // 가리킬 수 있는 "내용 블록" — 모든 트라이얼 덱이 공유하는 컴포넌트 어휘.
   // 여기에 없는 클래스는 그 덱에서 그냥 안 잡힌다(무해). 활동(정답을 고르거나
   // 채우는 것)은 일부러 뺀다 — 칩을 집는 손과 가리키는 손이 같으면 안 된다.
@@ -52,6 +65,12 @@
     // 활동 카드 자체 — "지금 이 문제요". 안의 알약·조각은 자기 클릭을 그대로
     // 가지고, 카드는 짚을 자리로 남는다.
     ".answer-box", ".choose-row", ".answer-label",
+    /* 컨트롤이 꽉 채우고 있는 활동 상자. 여기에 이름이 없어서 고르기 목록·
+       타일판·자모 조립기는 어디를 눌러도 짚히지 않았고, 타일 사이 여백을
+       누르면 켜 두었던 것이 꺼지기까지 했다. 상자에 주소가 생기면 아래
+       컨트롤 분기가 "이 문제요" 를 걸 자리가 된다. */
+    ".opt-list", ".tap-grid", ".tap-row", ".builder",
+    ".task-block",
     /* 블록 안의 부품. 한 겹 더 들어가 짚는 자리다 — 카드를 켠 뒤 그 안을 다시
        누르면 여기로 좁혀진다. 짚을 이름이 있는 것만 넣는다(읽기용 요미가나처럼
        따로 짚을 일이 없는 것은 뺀다). */
@@ -126,7 +145,33 @@
      통째로 사라진다. 상자는 SPOT 에 이름이 있을 때만 짚힌다. */
   var WIDGET =
     "button,a,input,textarea,select,label,[contenteditable]," +
-    "[data-sync-option],[data-ok],[data-item-id]";
+    "[data-sync-option],[data-ok],[data-item-id],.build-slot";
+
+  /* 눌러도 포인터를 옮기지 않는 컨트롤. 튜터 메모는 튜터만 보는 것이라
+     상대 화면에는 옮겨 줄 "여기" 가 없다 — 메모를 쓰는 동안 학생 화면에서
+     엉뚱한 블록이 켜지면 안 된다. (이 칸은 tutor-notes.js 가 이 파일보다
+     늦게 만들어 넣으므로 data-spot 도 없다.) */
+  var NOPOINT = ".note-input";
+
+  /* 컨트롤을 눌러야만 닿는 바깥 상자.
+     손으로 짚을 때는 체인에서 건너뛴다. 이 상자들은 안에 이미 짚을 자리를
+     (문제 카드·정답 칸) 가지고 있어서, 체인에 넣으면 지금까지 두 번이면
+     닿던 곳이 세 번이 된다 — 튜터가 매 수업 쓰는 동작을 늘릴 이유가 없다.
+     컨트롤(조각·알약)에서 올라올 때만 이 주소가 쓰인다. */
+  var BLOCK_ONLY = ".task-block";
+
+  /* 한 문제의 테두리 — 컨트롤에서 올라올 때 멈추는 자리.
+     "제일 바깥" 만으로는 부족하다. 바깥 상자가 곧 한 문제인 활동(고르기 줄,
+     조각 문제, 고르기 목록)이 있는가 하면, 문제를 여럿 담은 묶음인 것도 있다:
+     .tap-grid.rows 는 번호 붙은 문제 세 개를 담고 있어서, ②의 타일을 눌렀는데
+     ①과 ③까지 함께 켜졌다 — "이 문제요" 가 아니라 "이 장 전체요" 가 된다.
+     그래서 올라가다 문제를 만나면 거기서 멈추고, 만나지 않으면(문제 하나가
+     곧 바깥 상자면) 지금까지처럼 제일 바깥을 켠다.
+
+     .builder 는 문제 여럿처럼 보여도 자판이 하나다 — 키를 누르면 그 키가 어느
+     칸으로 갈지는 조립기의 상태가 정하지 DOM 이 정하지 않는다. 조립하는 내내
+     테두리가 두 칸 사이를 오가지 않도록 조립기 전체를 한 단위로 둔다. */
+  var QUESTION = ".task-block,.choose-row,.tap-row,.opt-list,.builder";
 
   // ---- 전역 인덱스 매기기 ----
   // 문서 순서대로 번호를 매긴다. 인터랙티브 안에 든 것은 건너뛴다 — 칸은 빼고.
@@ -142,11 +187,13 @@
     }
   })();
 
-  var current = null; // 지금 켜진 블록의 인덱스(number) | null
+  var current = null;   // 지금 켜진 블록의 인덱스(number) | null
+  var currentBy = null; // 그것을 켠 사람("tutor" | "student") | null
 
   function clearLit() {
     var prev = phone.querySelector(".is-spot");
-    if (prev) prev.classList.remove("is-spot", "is-spot-in", "is-spot-field");
+    if (prev) prev.classList.remove("is-spot", "is-spot-in", "is-spot-field",
+                                    "is-spot-student");
   }
 
   /* 링을 밖이 아니라 안쪽에 그려야 하는 블록인가.
@@ -170,24 +217,28 @@
   }
 
   // 정확히 하나만 켜거나, 아무것도 안 켠다. 멱등: 같은 인자 → 같은 결과.
-  function light(spot) {
+  function light(spot, by) {
     clearLit();
     current = null;
+    currentBy = null;
     if (spot == null) return;
     var el = phone.querySelector('[data-spot="' + spot + '"]');
     if (!el) return;                       // 이 덱에 없는 인덱스면 조용히 무시
     var host = ringHost(el);               // 칸이면 그 칸이 든 블록에 두른다
     host.classList.add("is-spot");
+    if (by === "student") host.classList.add("is-spot-student");
     if (el !== host) host.classList.add("is-spot-field");
     if (needsInsetRing(host)) host.classList.add("is-spot-in");
     current = spot;
+    currentBy = by === "student" ? "student" : "tutor";
   }
 
   /* 공유 상태는 블록 인덱스 하나. 페이저와 똑같이 레슨이 자기 kind 를 들고 온다. */
   sync.register("spotlight", {
-    read: function () { return { spot: current }; },
+    read: function () { return { spot: current, by: currentBy }; },
     apply: function (_el, state) {
-      light(state && typeof state.spot === "number" ? state.spot : null);
+      light(state && typeof state.spot === "number" ? state.spot : null,
+            state && state.by === "student" ? "student" : "tutor");
     }
   });
 
@@ -209,24 +260,71 @@
      도로 꺼 버리면 칸의 링은 한 번도 보이지 못한다. */
   function spotOf(el) { return parseInt(el.getAttribute("data-spot"), 10); }
 
+  /* 누른 자리를 감싼 것 중 제일 바깥의 짚을 수 있는 것. 컨트롤에서 올라올 때
+     쓴다 — 알약 하나가 아니라 그 알약이 속한 문제가 켜져야 하니까. */
+  function outermostSpot(el) {
+    var out = null, p = el.closest("[data-spot]");
+    while (p && phone.contains(p)) {
+      out = p;
+      p = p.parentElement && p.parentElement.closest("[data-spot]");
+    }
+    return out;
+  }
+
+  /* 이 컨트롤이 속한 문제. 문제를 만나면 거기서 멈추고, 없으면 제일 바깥. */
+  function controlBox(el) {
+    var q = el.closest(QUESTION);
+    if (q && phone.contains(q) && q.hasAttribute("data-spot")) return q;
+    return outermostSpot(el);
+  }
+
   document.addEventListener("click", function (e) {
     var t = e.target;
     if (!t || !t.closest) return;
-    if (t.closest(WIDGET) && !t.closest(POINTS)) return;
+
+    /* ---- 컨트롤을 눌렀다 ----
+       고르는 알약, 집어 옮기는 조각, 키패드, 타일. 누르는 동작은 그대로
+       흘려보내고(막지 않는다), 그것이 속한 활동 상자를 통째로 켠다.
+       고르는 손과 짚는 손을 나눠 두었더니 정작 활동이 안 켜졌다 — 학생이
+       보기를 고르는 동안 상대 화면에는 아무 표시도 없었고, 튜터가 "이 문제요"
+       하려면 컨트롤을 피해 여백을 찾아 눌러야 했다.
+
+       여기서는 토글도 파고들기도 하지 않는다. 같은 알약을 다시 누르는 것은
+       답을 바꾸는 동작이지 링을 끄라는 뜻이 아니라, 답을 만지는 내내 링이
+       깜빡이면 안 된다. 그래서 언제나 "제일 바깥 상자를 켠다" 하나뿐이고,
+       이미 그것이 켜져 있으면 아무것도 보내지 않는다.
+
+       칸(FIELD)은 예외다: click 보다 focusin 이 먼저 와서 이미 켜 두었는데,
+       여기서 한 번 더 손대면 그 링이 한 번도 보이지 못하고 꺼진다. */
+    if (t.closest(WIDGET) && !t.closest(POINTS)) {
+      if (t.closest(FIELD) || t.closest(NOPOINT)) return;
+      var box = controlBox(t);
+      if (!box) return;                     // 짚을 상자가 없는 컨트롤은 그냥 둔다
+      var boxSpot = spotOf(box);
+      if (current === boxSpot && currentBy === MY_ROLE) return;   // 멱등
+      light(boxSpot, MY_ROLE);
+      sync.push(carrier);
+      return;
+    }
 
     /* 누른 자리에서 바깥으로, 짚을 수 있는 것을 다 모은다 — 안쪽부터 순서대로.
        규칙 하나에서 두 가지가 나온다: 처음 누르면 가장 바깥(블록 전체)이 켜지고,
        켜진 채로 그 안을 다시 누르면 한 겹 들어간다. 카드를 짚었다가 카드 안의
        글자 하나를 짚는 손동작 그대로다. 제일 안쪽에서 또 누르면 꺼진다. */
-    var chain = [], p = t.closest("[data-spot]");
+    var chain = [], outerBlock = null, p = t.closest("[data-spot]");
     while (p && phone.contains(p)) {
-      chain.push(p);
+      if (p.matches(BLOCK_ONLY)) outerBlock = p; else chain.push(p);
       p = p.parentElement && p.parentElement.closest("[data-spot]");
     }
+    /* 건너뛴 바깥 상자가 유일하게 남은 자리라면 그때는 쓴다. 트레이에 연결되지
+       않은 장식용 조각처럼, 안에 짚을 것이 하나도 없는 자리에서도 손을 짚으면
+       그 문제가 켜져야 한다 — 여기서 아무것도 못 찾으면 켜 두었던 것이 꺼진다.
+       체인이 이미 차 있으면 끼어들지 않으므로, 탭 수가 늘어나는 일은 없다. */
+    if (!chain.length && outerBlock) chain.push(outerBlock);
 
     if (!chain.length) {                      // 짚을 것이 없는 자리 → 손을 뗀다
       if (current == null) return;            // 이미 꺼져 있다 — 발행할 게 없다
-      light(null);
+      light(null, MY_ROLE);
     } else {
       var at = -1;
       for (var i = 0; i < chain.length; i++) {
@@ -239,7 +337,7 @@
       else if (on && top.contains(on)) next = chain[0];     // 이미 이 블록 안이다 →
                                                             // 옆 부품으로 바로 옮긴다
       else next = top;                                      // 밖에서 왔다 → 블록 전체부터
-      light(next ? spotOf(next) : null);
+      light(next ? spotOf(next) : null, MY_ROLE);
     }
     sync.push(carrier);
   });
@@ -255,8 +353,8 @@
     var f = e.target;
     if (!f.matches || !f.matches(FIELD) || !f.hasAttribute("data-spot")) return;
     var spot = parseInt(f.getAttribute("data-spot"), 10);
-    if (current === spot) return;
-    light(spot);
+    if (current === spot && currentBy === MY_ROLE) return;
+    light(spot, MY_ROLE);
     sync.push(carrier);
   });
 
@@ -269,7 +367,7 @@
     setTimeout(function () {
       if (document.activeElement === f) return;
       if (current !== spot) return;         // 그새 다른 것이 켜졌다
-      light(null);
+      light(null, MY_ROLE);
       sync.push(carrier);
     }, 0);
   });
@@ -284,7 +382,7 @@
     if (now === lastActive) return;         // pg-on 이 실제로 바뀐 배치만 처리
     lastActive = now;
     if (current != null) {
-      light(null);
+      light(null, MY_ROLE);
       sync.push(carrier);
     }
   });
