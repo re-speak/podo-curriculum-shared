@@ -722,7 +722,10 @@ p {
 .slot-input {
   display: inline-flex;
   min-width: 2.5em;
-  max-width: 9em;
+  /* A clause-length answer may need more than the old 9em word cap, but it
+     must still fit the card at a true 360px viewport. The 8px subtraction
+     preserves the input's two 4px inline margins inside its containing line. */
+  max-width: calc(100% - 8px);
   height: 34px;
   padding: 0 14px;
   margin: 0 4px;

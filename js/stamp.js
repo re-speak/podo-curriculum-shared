@@ -27,6 +27,10 @@
   var bar   = document.querySelector(".pager");
   if (!phone || !art || !bar) return;      // 도장을 안 쓰는 덱이면 조용히 빠진다
 
+  var englishDeck = document.querySelector(
+    'meta[name="podo:target-language"][content="en"]'
+  );
+
   var sync = window.lessonSync || (window.lessonSync = {
     kinds: {},
     register: function (name, handlers) { this.kinds[name] = handlers; return this; },
@@ -78,7 +82,7 @@
   var btn = document.createElement("button");
   btn.type = "button";
   btn.className = "pg-btn pg-stamp";
-  btn.setAttribute("aria-label", "참 잘했어요 도장");
+  btn.setAttribute("aria-label", englishDeck ? "Well done stamp" : "참 잘했어요 도장");
   btn.appendChild(art.cloneNode(true));
   // 티칭 버튼 왼쪽에 둔다 — 오른쪽 끝은 "다음"의 자리다. DOM 순서 자체를
   // 맞춰서 넣으므로(CSS order 가 아니라), 탭 순서도 보이는 순서와 같다.

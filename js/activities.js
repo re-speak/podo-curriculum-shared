@@ -174,8 +174,6 @@ window.lessonSync = window.lessonSync || {
   // 점선 알약. 답 길이에 맞춰 폭을 잡는다. data-answer 가 없는 칸(이름을 적는
   // 칸)은 채점할 답이 없으므로 건드리지 않는다.
   document.querySelectorAll("input.slot-input[data-answer]").forEach(function (input) {
-    // 시트의 max-width 는 낱말용이라 한 문장짜리 칸을 잘라 낸다.
-    input.style.maxWidth = "none";
     sizeToAnswer(input);
     sized.push(input);
     wireInput(input);

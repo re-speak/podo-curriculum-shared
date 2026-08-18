@@ -159,9 +159,12 @@
 .brand-page.bleed .brand-sub { margin: 0; line-height: 23.25px; }
 /* 그림은 페이지 바닥을 넘어 흘러 나간다. 잘리는 자리가 곧 화면 아래끝이라
    「계속된다」 로 읽히고, 반대로 다 보이게 줄이면 스티커 한 장이 된다.
-   음수 bottom 이 곧 흘러넘치는 양이다(Figma 915 프레임에서 각각 115·70). */
-.brand-art { position: absolute; left: 30px; bottom: -115px; width: 420px; height: auto; }
-.brand-art.mid { left: 50%; bottom: -70px; width: 409px; transform: translateX(-50%); }
+   음수 bottom 이 곧 흘러넘치는 양이다. 폭(420·409)은 Figma 프레임 그대로이고,
+   넘치는 양은 그림 파일의 세로 비율이 정한다 — 아래끝에 매어 두었으므로 파일이
+   세로로 길어지면 인물이 그만큼 위로 올라선다. 지금 값은 화면 위 인물의 자리가
+   프레임과 같아지도록 맞춘 것이라, **그림을 다시 내보내면 여기도 같이 봐야 한다.** */
+.brand-art { position: absolute; left: 30px; bottom: -123px; width: 420px; height: auto; }
+.brand-art.mid { left: 50%; bottom: -97px; width: 409px; transform: translateX(-50%); }
 
 /* closing page */
 .end-head {
@@ -2247,6 +2250,59 @@ body.teaching .section-subtitle.pattern-meaning:has(+ .tutor-note) {
   overflow: hidden;
 }
 
+/* ---------- the anchor: what this form is, in Japanese, in one slot ----------
+   The first line of every 뜻과 쓰임 box used to be a sentence that quoted the
+   Japanese equivalent inside it — ‘~です’라는 뜻이에요. Two things went wrong.
+   Prose has no floor, so where the author could not name a clean Japanese
+   counterpart the sentence became a paragraph and the box grew to 150 자; and
+   a Korean tutor was handed a line to READ ALOUD containing script many of
+   them cannot read.
+
+   So the anchor stops being a sentence and becomes a slot. It holds the
+   Japanese and, under it, that Japanese written in Hangul so the tutor can
+   say it. Only one Korean sentence follows — the box can no longer absorb
+   formation (that is `pN-*-rule`) or a comparison with an earlier lesson
+   (that is the `.tutor-note` under this box).
+
+   The reading is NOT `.yomi`. `.yomi` is the learner's kana-over-Korean and
+   `yomi.js` hangs a shared よみがな switch on it — the learner turning kana
+   off would blank the tutor's crutch on both screens. Different reader,
+   different audience, different class, no switch. It also carries no level
+   rule: learners outgrow kana, tutors do not outgrow Japanese they never
+   read, and the anchorless decks are all 중고급 and up.
+
+   No fill and no outline — the hairline is the kicker's, so the kicker, the
+   anchor and the spoken line stack as one object. A bordered anchor inside
+   the tinted box inside the page card would be three frames deep. */
+.pattern-meaning .anchor {
+  display: grid;
+  justify-items: start;
+  gap: 1px;
+  padding: 12px 16px 11px;
+  border-bottom: 1px solid rgba(62, 91, 151, .12);
+}
+
+.pattern-meaning .anchor-ja {
+  color: var(--ink);
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -.01em;
+}
+
+/* the tutor's line, so it takes the tutor's ink — the same blue the kicker
+   uses. Tracked out a little because it is read syllable by syllable. */
+.pattern-meaning .anchor-ko {
+  color: var(--blue-ink);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .06em;
+}
+
+.section-subtitle.pattern-meaning > .anchor + .ko {
+  padding-top: 11px;
+}
+
 /* ---------- 원어민 팁: the same sentence, the way a native says it ----------
    Some tip pages teach a genuine one-way SWAP — a redundant 저는 drops out,
    for example — and the card they used never drew it. It showed two example
@@ -2636,6 +2692,35 @@ body.teaching .section-subtitle.pattern-meaning:has(+ .tutor-note) {
   background: var(--gray-50);
 }
 
+/* A listening contrast may show the real spelling as a fixed prompt beside
+   two possible heard forms. The prompt is deliberately not a button: only
+   the two sound spellings are answers. */
+.tap-row.sound-choice { grid-template-columns: 108px 1fr 1fr; }
+
+.sound-prompt {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.sound-prompt small {
+  display: block;
+  margin-top: 6px;
+  color: var(--gray-500);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.tap-grid.rows.words .sound-choice .tap-tile {
+  height: 92px;
+  font-size: 27px;
+}
+
 .tap-n {
   font-size: 17px;
   font-weight: 800;
@@ -2858,8 +2943,9 @@ body.teaching .section-subtitle.pattern-meaning:has(+ .tutor-note) {
    none of it exists in the page until the switch on the cover is
    turned on. Student view is the default, and reloading returns to it.
 
-   Notes are written in Korean: the tutor reads Korean, and a
-   Japanese beginner cannot, which is a second lock on the answers.
+   Notes use the deck's tutor language. Privacy still comes from teaching mode;
+   English learners may understand English tutor notes, so language is never
+   treated as an access-control boundary.
    ============================================================ */
 .tutor-note { display: none; }
 
@@ -2890,9 +2976,9 @@ body.teaching .tutor-note {
    words instead, and the fill only has to be a *step* rather than a shock —
    blue-200 is the same family as the script it hangs off, one shade down, so
    the two bands read as one card with a private second half.
-   Korean, like every tutor-facing string: the tutor reads it, a beginner
-   learner cannot, which is the second lock. Set from CSS so all 48 notes in
-   the decks get it without touching any markup. */
+   The default is Korean. English decks declare podo:target-language metadata
+   and receive an English label from the adjacent override. Set from CSS so
+   every note gets the right label without deck-local markup. */
 /* A memo written against this instruction belongs WITH it — the merged
    block's 26px would otherwise leave the memo stranded between the script and
    the activity. Lives here rather than in the shared sheet because the merged
@@ -2915,6 +3001,10 @@ body.teaching .section-subtitle + .tutor-note:has(+ .note-input) { margin-bottom
   font-size: 10.5px;
   font-weight: 800;
   white-space: nowrap;
+}
+
+html:has(meta[name="podo:target-language"][content="en"]) .tutor-note::before {
+  content: "Tutor only";
 }
 
 /* ---- MERGED WITH THE SCRIPT IT BELONGS TO ----
@@ -3615,6 +3705,13 @@ button.opt-row:active { transform: scale(.99); }
    남는 높이를 위아래로 갈라 가운데에 세워 봤더니 둘 사이가 벌어져서,
    질문을 읽고 눈이 한참 내려가야 칸이 나왔다. 지금은 위에서부터 쌓고,
    대신 두 덩어리를 키운다. 교정이 여러 개면 아래로 넘치는 게 낫다. */
+.fb-compose {
+  margin-top: 26px;
+}
+
+.fb-compose + .fb-compose { margin-top: var(--item-gap); }
+.fb-compose > .fb { margin-top: 0; }
+
 .fb {
   display: grid;
   gap: var(--item-gap);
@@ -3671,6 +3768,46 @@ button.opt-row:active { transform: scale(.99); }
   background: #fff;
   overflow: hidden;
 }
+
+/* Core·Contextual 문장 만들기는 발화 과제가 따로 있을 수 있다. 같은 카드의
+   머리띠로 붙여, 교정 카드 안에서 무엇을 말할지 먼저 읽고 바로 받아 적는다. */
+.fb-task {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-50);
+  color: var(--gray-500);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.fb-task::before {
+  content: "やること";
+  flex: none;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(28, 28, 28, .09);
+  color: inherit;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+/* 어휘 힌트는 원래 발화를 만드는 스캐폴드라 첫 교정 카드의 바닥에만 붙는다.
+   뒤에 교정이나 노트를 더 열어도 어느 문장을 위한 힌트인지 흐려지지 않는다. */
+.fb-block > .hint {
+  margin: 0;
+  padding: 9px 14px;
+  border-top: 1px solid var(--gray-200);
+  background: var(--gray-50);
+}
+
+.fb-block > .hint > .hint-chip { border-color: transparent; }
 
 /* 지우기는 열려 있는 칸이면 늘 있다 — 잘못 연 빈 칸도 닫을 수 있어야 한다.
    예외는 하나, 마지막 남은 빈 칸이다: 지워도 그 자리는 다시 열려 있어야 해서
@@ -5256,19 +5393,15 @@ body.teaching .tcon { display: block; margin: 0 0 28px; }
 /* 평균 = 트랙의 0→평균 구간을 그대로 따라 그린 점선 캡슐.
    세로 눈금 하나를 세우던 자리다. 눈금은 막대와 재질이 달라서 「막대 + 눈금자」
    로 읽혔고, 초록이 그 선을 지나가면 막대에 난 금처럼 보였다. 점선 캡슐은
-   막대와 같은 12px·같은 자리에 겹치고(box-sizing: border-box 라 2px 테두리가
-   12px 안쪽에 그려져 막대가 두꺼워지지 않는다), 평균도 「길이」 로 말한다. */
+   막대와 같은 12px·같은 자리에 겹치고(box-sizing: border-box 라 테두리가 12px
+   안쪽에 그려져 막대가 두꺼워지지 않는다), 평균도 「길이」 로 말한다.
+   캡슐은 초록 **위에** 얹힌다. 밑에 깔면 내 값이 평균을 넘은 순간 평균이 통째로
+   사라져서, 가장 알고 싶은 「얼마나 넘었나」 를 볼 수 없다. 진한 초록(#3f7d1a)
+   한 색으로 두면 채운 초록 위에서도, 회색 트랙 위에서도 같은 선으로 읽힌다. */
 .axb-avg {
-  position: absolute; inset: 0 auto 0 0; z-index: 0; box-sizing: border-box;
-  border: 2px dashed #b4b4b0; border-radius: 999px; background: none;
+  position: absolute; inset: 0 auto 0 0; z-index: 2; box-sizing: border-box;
+  border: 1px dashed #3f7d1a; border-radius: 999px; background: none;
 }
-/* 캡슐은 초록 아래에 깔린다 — 덮인 구간은 초록이 매끈하게 이기고, 대신 평균이
-   서 있던 자리에 그 캡슐의 「오른쪽 끝」 만 남긴다. 새 기호가 아니라 가려진
-   마감 그대로라(반지름 5 = 막대 높이의 절반), 평균 아래 줄의 둥근 점선 끝과
-   같은 곡률이다. 호의 꼭짓점이 평균값 자리에 선다. */
-.axb-cap { position: absolute; top: 0; z-index: 2; }
-.axb-cap svg { display: block; overflow: visible; }
-.axb-cap path { fill: none; stroke: #3f7d1a; stroke-width: 2; stroke-dasharray: 3 3; }
 
 .axsum.hide, .axtip.hide { display: none; }
 .axsum { display: flex; gap: 4px; margin-top: 16px; }
@@ -5279,8 +5412,29 @@ body.teaching .tcon { display: block; margin: 0 0 28px; }
 .axs h4 { display: flex; align-items: center; gap: 4px; margin: 0; color: #1087ff; font-size: 16px; font-weight: 800; letter-spacing: -.02em; }
 .axs.weak h4 { color: #fa2a49; }
 .axs h4 img { width: 20px; height: 20px; }
-.axs ul { margin: 4px 0 0; padding-left: 21px; }
-.axs li { font-size: 14px; font-weight: 500; line-height: 1.45; }
+/* 항목은 글머리표 줄이 아니라 칩이다 — 상자마다 둘씩, 나란히.
+   칩은 제 상자의 색을 채워 입는다: 파랑 상자면 파란 칩, 분홍 상자면 붉은 칩.
+   그림은 흰 네모 안에 앉아, 채운 색 위에서도 선이 살아난다. */
+.axs ul { display: flex; gap: 9px; margin: 0; padding: 10px 0 0; list-style: none; }
+.axs li {
+  display: flex; align-items: center; gap: 4px;
+  width: 82px; box-sizing: border-box; border-radius: 8px;
+  background: #1087ff; border: 1px solid #1087ff;
+}
+.axs.weak li { background: #fa2a49; border-color: #fa2a49; }
+.axs li i {
+  flex: none; display: grid; place-items: center;
+  width: 27.62px; height: 27.62px; border-radius: 7.97px; background: #fff;
+}
+/* 그림 자리는 17×19 다 — 책(어휘·발음)이 세로로 한 칸 길고 나머지 넷은 정사각이라,
+   가장 큰 것에 맞춰 두고 contain 으로 재우면 다섯이 같은 중심에 앉는다. */
+.axs li img { width: 17px; height: 19px; object-fit: contain; }
+/* 이름은 그림을 뺀 나머지 폭 한가운데에 선다 — 이름이 두 자든 세 자든
+   칩 안에서 같은 자리에 앉는다. 그림이 없는 칩에서는 칩 전체가 그 자리다. */
+.axs li b {
+  flex: 1 1 auto; min-width: 0; text-align: center;
+  color: #fff; font-size: 12px; font-weight: 600; line-height: normal;
+}
 
 .axtip { margin-top: 6px; padding: 12px; border-radius: 12px; background: var(--green-100); }
 .axtip h4 { display: flex; align-items: center; gap: 4px; margin: 0; color: var(--green-500); font-size: 16px; font-weight: 800; line-height: 24px; letter-spacing: -.02em; }
@@ -5354,7 +5508,10 @@ body.teaching .tcon { display: block; margin: 0 0 28px; }
 /* 지나온 마디는 초록에 잠겨 사라진다. 흰 자국을 남기면 차오른 초록 위에 점이
    떠서, 다 지난 구간이 아직 밟는 자리처럼 보인다 — 여기서 「지나왔다」 를 말하는
    것은 점이 아니라 초록의 길이다. */
-.rd-dot.done, .rd-dot.minor.done, .rd-dot.now { r: 0; }
+.rd-dot.done, .rd-dot.minor.done { r: 0; }
+/* 지금 선 자리만 남는다. 첫 칸에서는 초록이 아직 0 이라 이 점 하나가 「여기서
+   시작한다」 를 말한다 — 왼쪽 끝에 서는 그 점이다. */
+.rd-dot.now { r: 6; fill: #fff; stroke: var(--green-500); stroke-width: 3.5; }
 .rd-dot.goal.done, .rd-dot.goal.now { r: 6; stroke-width: 2.2; }
 /* 라벨 · 세 줄 모두 같은 크기, 색만 다르다. 지금은 먹색, 지나갈 눈금은 회색,
    도착만 초록. 크기까지 셋으로 갈라 놓으면 눈금이 서열로 읽힌다.
@@ -5652,66 +5809,40 @@ body.teaching .tcon { display: block; margin: 0 0 28px; }
    그리고 점선을 끝까지 잇는다 — 자리에서 내려와 가름대에서 셋으로 갈라져
    단어마다 내려앉으니, 「이 한 자리에 이 셋 중 하나」 가 선 하나로 읽힌다.
    참고: references/curricula/k-village-esther-bunny (틀 + 단어 은행). */
-.hy .sp-pat { display: grid; justify-items: center; width: 100%; }
-/* 줄을 「앞 · 자리 · 뒤」 세 칸으로 세우고 양 끝을 1fr 로 둔다. 그러면 앞뒤
-   글자의 길이가 서로 달라도 갈아 끼우는 자리는 언제나 줄의 한가운데에 선다 —
-   그 가운데가 아래 단어 칸의 가운데이기도 하므로, 자리에서 내려온 줄기가
-   가운데 단어의 한복판에 정확히 떨어진다. 앞은 오른쪽, 뒤는 왼쪽으로 붙여
-   자리를 감싸게 두어, 문장은 여전히 한 덩어리로 읽힌다.
-   line-height 를 1.15 로 눌러 두면 줄에서 가장 높은 것이 언제나 그 자리라 —
-   줄의 아래 끝 = 자리의 아래 끝이고, 줄기의 출발점이 흔들리지 않는다. */
-.hy .pat-line {
-  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 5px;
-  width: 100%;
-  font-size: 24px; font-weight: 800; line-height: 1.15; letter-spacing: -.03em;
+/* 갈아 끼우는 자리를 문장 한가운데에 두고, 바꿔 넣을 말을 그 위아래로 쌓는다.
+   점선 가름대로 잇던 자리다 — 선을 눈으로 따라가야 「이 칸이 저 자리에 들어간다」
+   가 읽혔는데, 포개 두면 같은 말을 선 없이 한다. */
+.hy .sp-pat {
+  display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%;
+}
+.hy .pat-pre, .hy .pat-post {
+  flex: none;
+  font-size: 24px; font-weight: 800; line-height: 27.6px; letter-spacing: -.03em;
   color: var(--ink); white-space: nowrap;
 }
-.hy .pat-line > span:first-child { justify-self: end; }
-.hy .pat-line > span:last-child { justify-self: start; }
-/* 점선 테두리 — 아래로 뻗는 선과 같은 재질이라, 「여기가 갈아 끼우는 칸」 이
-   테두리 하나로 읽힌다. 참고서(k-village)가 슬롯을 점선 상자로 두는 것과 같다. */
+/* 폭을 자리(102)에 못박아 두면 후보의 길이가 달라져도 문장이 좌우로 흔들리지
+   않는다 — 카드를 넘길 때마다 「저는」 의 자리가 바뀌면 넘김이 덜컹거린다. */
+.hy .pat-stack {
+  flex: none; display: flex; flex-direction: column; align-items: center;
+  gap: 5px; width: 102px;
+}
+/* 후보 칸 · 얕은 그림자만 깔아 「집어서 저 자리에 끼우는 물건」 으로 보이게 한다 */
+.hy .pat-alt {
+  display: grid; place-items: center; box-sizing: border-box;
+  width: 79.44px; height: 40.7px;
+  border: 1.26px solid var(--gray-200); border-radius: 10.07px; background: #fff;
+  box-shadow: 0 1.26px 0 rgba(28,28,28,.05);
+  font-size: 14.27px; font-weight: 800; line-height: 21.4px; letter-spacing: -.02em;
+  color: var(--ink); white-space: nowrap;
+}
+/* 지금 끼워져 있는 말 · 초록으로 채우고 테를 둘러, 후보 둘 사이에서 이것만 선다 */
 .hy .pat-slot {
-  position: relative; padding: 5px 14px;
-  border: 1.5px dashed var(--green-500); border-radius: 10px; background: var(--green-100);
-  color: #4e9422; font-weight: 800;
-}
-/* 자리에서 내려오는 줄기. 12px 아래 가름대를 만나고(.pat-fan 의 margin),
-   거기서 멈추지 않고 12px 더 내려가 가운데 단어 위에 닿는다(.pat-fan 의 높이). */
-.hy .pat-slot::after {
-  content: ""; position: absolute; left: 50%; top: calc(100% + 1.5px); width: 0; height: 38px;
-  border-left: 1.5px dashed var(--green-500); opacity: .55;
-}
-/* 가름대와 눈금 · 자리는 report.js 가 단어 수에서 계산해 인라인으로 얹는다 */
-.hy .pat-fan {
-  position: relative; width: 100%; max-width: 300px; height: 18px; margin-top: 20px;
-  opacity: .55;
-}
-.hy .pf-bar { position: absolute; top: 0; border-top: 1.5px dashed var(--green-500); }
-.hy .pf-t {
-  position: absolute; top: 0; bottom: 0; width: 0;
-  border-left: 1.5px dashed var(--green-500);
-}
-/* 눈금 바로 밑에 서야 해서 균등 분할이다 — 칸 너비가 아니라 자리로 줄을 맞춘다 */
-.hy .pat-words {
-  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px;
-  width: 100%; max-width: 300px;
-}
-/* 칸에 아주 얕은 그림자를 깔아 「집어서 저 자리에 끼우는 물건」 으로 보이게
-   하고, 위 가장자리 한가운데에 점 하나를 박는다. 그 점은 위에서 내려온 선이
-   닿는 자리다 — 선이 칸의 테두리에서 그냥 끝나면 선과 칸이 남남이지만,
-   닿는 자리에 구멍이 하나 있으면 꽂힌 것으로 읽힌다. 글자만 있던 칸에
-   물성을 주는 데 이 둘이면 충분하다. */
-.hy .pat-words span {
-  position: relative;
-  display: grid; place-items: center; padding: 10px 5px;
-  border: 1.5px solid var(--gray-200); border-radius: 12px; background: #fff;
-  box-shadow: 0 1.5px 0 rgba(28,28,28,.05);
-  font-size: 17px; font-weight: 800; color: var(--ink); letter-spacing: -.02em;
-}
-.hy .pat-words span::before {
-  content: ""; position: absolute; left: 50%; top: 0;
-  width: 6px; height: 6px; margin: -3px 0 0 -3px;
-  border-radius: 50%; background: var(--green-500); opacity: .55;
+  display: grid; place-items: center; box-sizing: border-box;
+  width: 100%; height: 53px;
+  border: 1.5px solid var(--green-500); border-radius: 12px; background: var(--green-100);
+  box-shadow: 0 1.5px 0 var(--green-500);
+  font-size: 20px; font-weight: 800; line-height: 25.5px; letter-spacing: -.017em;
+  color: var(--green-500); white-space: nowrap;
 }
 
 /* 그림 ④ 도착 · 다다른 레벨 한 장.
@@ -5722,25 +5853,37 @@ body.teaching .tcon { display: block; margin: 0 0 28px; }
    위 「내 레벨」 카드(.lvbig)와 같은 짜임이다 — 큰 레벨, 그 아래 한 줄, 그
    아래 TOPIK. 리포트가 「지금」 을 그렇게 보여 줬으니 「나중」 도 같은 꼴이라야
    두 장이 같은 자의 양 끝으로 읽힌다. */
-.hy .sp-goal { display: grid; justify-items: center; gap: 7px; text-align: center; }
-.hy .gl-face { width: 74px; height: 74px; object-fit: contain; }
+/* 도착한 자리를 연둣빛 판 하나로 감싸 상장처럼 둔다 — 앞의 세 장이 흰 바탕에
+   그린 「하는 일」 이라면, 이 장만 판을 깔아 「닿았다」 를 다른 결로 말한다. */
+.hy .sp-goal {
+  display: flex; align-items: center; justify-content: center; gap: 13px;
+  width: 100%; height: 100%; box-sizing: border-box;
+  border-radius: 20px; background: rgba(215,255,149,.49);
+}
+.hy .gl-face { flex: none; width: 117px; height: 120px; object-fit: contain; }
+/* 글은 폭을 못박아 둔다 — 레벨마다 문장 길이가 달라도 두 줄로 앉고,
+   카드를 넘길 때 그림과 글의 경계가 제자리에 있다 */
+.hy .gl-body { flex: none; display: flex; flex-direction: column; gap: 7px; width: 147px; }
+.hy .gl-top { display: flex; align-items: center; gap: 7px; }
 .hy .gl-lv {
   font-size: 26px; font-weight: 900; letter-spacing: -.03em; color: var(--green-500);
-  line-height: 1;
+  line-height: 26px;
+}
+/* 「올라섰다」 는 알약. 초록을 채워 쓰는 유일한 자리라, 도착 카드에서만 선다. */
+.hy .gl-up {
+  padding: 3px 10px; border-radius: 999px; background: var(--green-500);
+  color: #fff; font-style: normal; font-size: 10px; font-weight: 800; line-height: 17.25px;
 }
 .hy .gl-line {
-  margin: 0; font-size: 17px; font-weight: 800; line-height: 1.35; letter-spacing: -.02em;
+  margin: 0; font-size: 17px; font-weight: 800; line-height: 22.95px; letter-spacing: -.02em;
   color: var(--ink); word-break: keep-all;
 }
 .hy .gl-line b { font-weight: 800; color: var(--green-500); }
-/* 급수는 앞의 셋에서 한 칸 떨어져, 옅은 알약으로 — 머리의 레슨 수 알약과 같은 결 */
-.hy .gl-cert {
-  padding: 3px 10px; border-radius: 999px;
-  background: var(--green-100); color: #4e9422; font-size: 11.5px; font-weight: 800;
-}
 /* 아직 목표를 안 고른 칸 — 초록은 「고른 것」 이라 여기에 쓰면 거짓말이 된다 */
 .hy .hy-do-e { color: var(--gray-500); }
 .hy-goal .hy-head > i { background: var(--gray-400); }
+/* 「완주」 는 레슨 수가 아니라 끝났다는 표라, 옅은 알약이 아니라 채운 알약이다 */
+.hy-goal .hy-n { background: var(--green-500); color: #fff; font-weight: 900; }
 
 /* 그림 ③ 대사 두 턴 · 덱의 말풍선 규칙 그대로 — 상대는 왼쪽 흰 칸,
    학습자는 오른쪽 연두 채움에 테두리 없음(말하는 사람은 고른 것이 아니다). */
@@ -5748,6 +5891,45 @@ body.teaching .tcon { display: block; margin: 0 0 28px; }
    여기서 새로 정하는 것은 없다 — 말풍선의 꼴도, 꼬리가 어느 모서리에 붙는지도,
    내 말이 연두인 것도 lesson-card.css 의 규칙 그대로다. 리포트에 나온 그림이
    첫 수업 화면과 같아야, 이 카드가 파는 것이 무엇인지 한 번에 붙는다. */
+/* ---------- 장면 · 사진 위에 얹은 대사 ----------
+   사진 석 장이 그림 자리를 가득 채우고, 그 위에 말풍선 둘이 뜬다. 아래로
+   갈수록 짙어지는 그늘을 깔아 두는 것이 핵심이다 — 사진이 밝은 자리에
+   흰 말풍선이 놓이면 글자가 사진에 먹힌다. */
+.hy .sp-scene { position: relative; width: 100%; height: 100%; }
+.hy .sc-pics { position: absolute; inset: 0; display: flex; gap: 2.3px; }
+.hy .sc-pics img {
+  flex: 1 1 0; min-width: 0; height: 100%;
+  border-radius: 5px; object-fit: cover;
+}
+/* 그늘은 사진마다 따로 얹는다 — 한 장으로 덮으면 사진 사이의 틈까지 어두워져
+   석 장이 한 장으로 뭉친다 */
+.hy .sc-pics::after {
+  content: ""; position: absolute; inset: 0; border-radius: 5px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,.4));
+  pointer-events: none;
+}
+/* 대사는 사진 아래쪽에 모인다. 위 40%는 장면이 보이는 자리로 비워 둔다. */
+.hy .sc-lines {
+  position: absolute; left: 9px; right: 9px; bottom: 14px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.hy .sc-b {
+  align-self: flex-start; max-width: 84%;
+  padding: 11px 13px; box-sizing: border-box;
+  border: 1px solid var(--gray-200); border-radius: 4px 14px 14px 14px;
+  background: #fff; color: var(--ink);
+  font-size: 15.5px; font-weight: 700; line-height: 21.7px; letter-spacing: -.06em;
+}
+/* 내 말은 오른쪽에서, 라임으로 — 꼬리도 반대쪽 귀가 죽는다 */
+.hy .sc-b.me {
+  align-self: flex-end;
+  border-color: #c9ff70; border-radius: 14px 4px 14px 14px; background: #c9ff70;
+}
+/* 형광펜은 흰 말풍선에서만 보인다 — 라임 위에 라임을 그으면 자국이 사라지므로,
+   내 말에서는 글자를 진하게 두는 것으로 대신한다 */
+.hy .sc-b mark { background: #c9ff70; border-radius: 3px; color: inherit; }
+.hy .sc-b.me mark { background: none; }
+
 .hy .sp-talk { width: 100%; }
 .hy .turn + .turn { margin-top: 12px; }
 .hy .turn .who { width: 40px; gap: 3px; }

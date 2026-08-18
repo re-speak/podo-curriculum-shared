@@ -189,24 +189,24 @@
                      cap: "자음과 모음이 만나 한 글자 — 그래서 「카페」가 읽혀요" } },
     core:   { t: "핵심 패턴", ico: "core",
               can: "내 소개와 하루 일을 문장으로 말해요",
-              art: { kind: "pat", pre: "저는", slot: "일본 사람", post: "입니다.",
-                     words: ["학생", "회사원", "요리사"],
-                     cap: "틀은 그대로, 가운데 한 자리만 내 단어로" } },
+              art: { kind: "pat", pre: "저는", slot: "일본사람", post: "입니다.",
+                     words: ["학생", "요리사"],
+                     cap: "문장 구조는 그대로, 가운데 한 자리만 내 단어로" } },
     travel: { n: 40, t: "상황별 · 여행", ico: "travel",
               can: "가게에서 주문하고 길을 물어요",
-              art: { kind: "talk", who: "행인", face: "b",
+              art: { kind: "talk", pics: ["travel1", "travel2", "travel3"],
                      turns: [["me", "혹시 명동역이 [어딘지 아세요]?"],
                              ["", "이쪽으로 [쭉 가시면 돼요]."]],
                      cap: "길에서 · 가게에서 진짜 오가는 말을 그대로" } },
-    drama:  { n: 40, t: "상황별 · 드라마", ico: "kpop",
+    drama:  { n: 40, t: "상황별 · 드라마", ico: "drama",
               can: "드라마 대사가 자막 없이 들려요",
-              art: { kind: "talk", who: "상대역", face: "a",
+              art: { kind: "talk", pics: ["drama1", "drama2", "drama3"],
                      turns: [["", "우리 어디서 [본 적 있지 않아요]?"],
                              ["me", "아… 저 그 카페에서 [봤어요]."]],
                      cap: "드라마에 나온 대사를 그대로 주고받아요" } },
     banmal: { n: 20, t: "상황별 · 반말 수다", ico: "friend",
               can: "친구에게 말을 놓고 수다 떨어요",
-              art: { kind: "talk", who: "친구", face: "b",
+              art: { kind: "talk", pics: ["banmal1", "banmal2", "banmal3"],
                      turns: [["", "너 지금 어디 [가는 거야]?"],
                              ["me", "나 편의점. 같이 [갈래]?"]],
                      cap: "요를 떼고, 친구에게 하는 말투로" } },
@@ -214,7 +214,7 @@
     // 명목값이지 트랙의 분량이 아니다 — plan-logic.md 에 그렇게 적어 두었다.
     free:   { n: 40, t: "프리토킹", ico: "free",
               can: "내 생각과 그 이유까지 말해요",
-              art: { kind: "talk", who: "선생님",
+              art: { kind: "talk", pics: ["free1", "free2", "free3"],
                      turns: [["", "돈과 시간, 하나만 가질 수 있다면요?"],
                              ["me", "저는 시간이요. [돈은 다시 벌 수 있으니까요]."]],
                      cap: "생각 하나에 이유 하나 — 문장을 이어서 말해요" } }
@@ -399,19 +399,6 @@
   /* ---- ② 항목별 진단 · 레이더 + 다섯 줄 ---- */
   var bars = document.querySelector(".axbars");
 
-  /* 초록이 평균을 지났을 때만, 초록에 가려진 점선 캡슐의 「오른쪽 끝」 을 그
-     자리에 남긴다. 곧은 세로선을 세우면 예전 눈금과 같은 모양이라 막대에 난
-     금으로 되읽히므로, 캡슐의 마감을 그대로 쓴다 — 반지름 5 는 막대 높이
-     12px 의 절반에서 테두리 두께를 뺀 값이라, 평균 아래 줄의 둥근 끝과 곡률이
-     같다. 호는 (1,1)→(1,11) 의 반원이고 꼭짓점 x=6 이므로, 왼쪽으로 6px 물려
-     두면 꼭짓점이 평균값 자리에 정확히 선다. */
-  function avgCap(mine, avg) {
-    if (!(mine > avg)) return "";
-    return '<span class="axb-cap" style="left:calc(' + pct(avg) + '% - 6px)">' +
-             '<svg width="8" height="12" viewBox="0 0 8 12" aria-hidden="true">' +
-               '<path d="M1,1 A5,5 0 0 1 1,11"/></svg></span>';
-  }
-
   function renderAspects() {
     growRadar();
     if (!bars) return;
@@ -425,12 +412,11 @@
       row.className = "axb";
       /* 평균은 두 번째 막대가 아니라, 트랙의 0→평균 구간을 그대로 따라 그린
          점선 캡슐이다 — 막대와 같은 높이·같은 자리에 겹치므로 줄이 두꺼워지지
-         않고, 그러면서도 평균이 「길이」 로 말해진다. 캡슐은 초록 아래에 깔려
-         덮인 구간을 내주고, 그 대신 avgCap() 이 캡슐의 끝만 남긴다. */
+         않고, 그러면서도 평균이 「길이」 로 말해진다. 캡슐은 초록 위에 얹혀
+         끝까지 보인다(trial.css 의 .axb-avg). */
       row.innerHTML = '<span class="axb-n">' + a.n + '</span>' +
         '<span class="axb-t"><b class="axb-avg" style="width:' + pct(AVG[a.k]) + '%"></b>' +
-        '<i class="axb-f" style="width:' + pct(areaLv(a.k)) + '%"></i>' +
-        avgCap(areaLv(a.k), AVG[a.k]) + '</span>';
+        '<i class="axb-f" style="width:' + pct(areaLv(a.k)) + '%"></i></span>';
       bars.appendChild(row);
     });
 
@@ -443,11 +429,20 @@
     document.querySelector(".axtip").classList.toggle("hide", flat);
     if (flat) return;
 
+    /* 항목은 이름만 적힌 줄이 아니라 그림을 단 칩으로 선다. 두 상자가 나란히
+       서 있고 각 상자에 둘씩이라, 네 항목을 훑는 눈이 글자를 읽기 전에 그림으로
+       먼저 짚는다. 그림이 아직 없는 항목(발음)은 글자만 있는 칩으로 남는다 —
+       빈 네모를 두느니 없는 채로 두는 편이 낫다. */
+    var chip = function (a) {
+      var src = srcOf(".ax-src", "ax", a.k);
+      return "<li>" + (src ? '<i><img src="' + src + '" alt=""></i>' : "") +
+             "<b>" + a.n + "</b></li>";
+    };
     var good = document.querySelector(".axs:not(.weak) ul");
     var weak = document.querySelector(".axs.weak ul");
     good.innerHTML = ""; weak.innerHTML = "";
-    order.slice(0, 2).forEach(function (a) { good.innerHTML += "<li>" + a.n + "</li>"; });
-    order.slice(-2).forEach(function (a) { weak.innerHTML += "<li>" + a.n + "</li>"; });
+    order.slice(0, 2).forEach(function (a) { good.innerHTML += chip(a); });
+    order.slice(-2).forEach(function (a) { weak.innerHTML += chip(a); });
 
     /* 코멘트는 위 두 상자를 한 문장으로 잇는다: 잘하는 둘을 이름으로 부르고,
        아쉬운 둘을 기르는 방법을 붙인다. 방법은 가장 처지는 항목의 HINT 다 —
@@ -826,28 +821,29 @@
     roadFracs = stopAt.map(function (d) { return dotFracs[d]; });
   }
 
-  /* 초록은 「지금 펴 놓은 카드가 길의 어디냐」 다 — 그 코스가 시작하는 자리가
-     아니라 끝나는 자리까지 찬다. 카드와 길이 한 문장이 되는 건 이쪽이다:
-     「한글 읽기 · 1/4」 을 보고 있으면 길에서도 첫 구간이 통째로 칠해져 있고,
-     「다음」 을 누르면 카드와 함께 초록이 한 구간 더 나아간다. 시작점까지만
-     칠하면 첫 카드에서는 초록이 아예 없어, 카드가 길의 어느 토막인지 말해 주는
-     것이 하나도 없다.
-     지나온 점은 초록에 잠겨 사라지고(.done), 도착점만 테를 두른 채 남는다 —
-     지도에 목적지가 찍혀 있어야 길이 어디로 가는지 읽힌다. */
+  /* 초록은 「지금 어디까지 왔나」 다 — 첫 칸은 왼쪽 끝에서 시작하고, 「다음」 을
+     누를 때마다 한 마디씩 차오르다가 마지막 칸에서 길 전체가 초록이 된다.
+     그 마지막 칸이 도착(축하)이다.
+     지나온 점은 초록에 잠겨 사라지고(.done), 지금 선 자리만 흰 속에 초록 테를
+     두른다. 도착점은 아직 못 갔어도 테를 두른 채 남는다 — 지도에 목적지가
+     찍혀 있어야 길이 어디로 가는지 읽힌다. */
   function setRoadStep(step, animate) {
-    var target = roadFracs[Math.min(step + 1, roadFracs.length - 1)], from = roadShown;
+    var target = roadFracs[step], from = roadShown;
     if (roadRaf) { cancelAnimationFrame(roadRaf); roadRaf = null; }
     /* 점은 걸음이 아니라 차오른 초록을 따른다. 목표 칸을 보고 한 번에 갈아
        끼우면 초록이 아직 기어가는 450ms 동안 초록 점들이 회색 길 위에 떠 있다.
        파도가 지나간 자리부터 하나씩 물드니, 되짚어 갈 때도 그대로 되감긴다. */
+    // 지금 서 있는 걸음이 일곱 자리 중 어디인가 — 0칸은 출발점, 그 뒤는 코스 자리
+    var atDot = stopAt[Math.max(0, Math.min(step, stopAt.length - 1))];
     var paint = function (f) {
       roadShown = f;
       roadEls.fill.setAttribute("stroke-dashoffset", (1 - f).toFixed(4));
       roadEls.dots.forEach(function (c, i) {
-        /* 지났느냐 아니냐, 그리고 도착점이냐 — 점이 아는 것은 이 둘뿐이다.
+        /* 지났느냐, 지금 서 있느냐, 도착점이냐 — 점이 아는 것은 이 셋뿐이다.
            class 를 통째로 갈아 끼우므로 등급도 상태와 함께 매번 다시 쓴다. */
+        var here = f >= dotFracs[i] - 1e-4;
         c.setAttribute("class", "rd-dot" + (i === LAST_DOT ? " goal" : "") +
-          (f >= dotFracs[i] - 1e-4 ? " done" : ""));
+          (!here ? "" : i === atDot ? " now" : " done"));
       });
     };
     /* 숨은 탭에서는 rAF 가 돌지 않는다 — 애니메이션에 점까지 실려 있으니,
@@ -1013,32 +1009,22 @@
       }).join("") + '</div>';
     }
     if (a.kind === "pat") {
-      /* 틀의 앞뒤를 각각 span 으로 세워 줄을 flex 로 만든다 — 줄의 아래 끝이
-         곧 갈아 끼우는 자리의 아래 끝이라, 자리에서 내려오는 줄기가 아래
-         가름대에 정확히 닿는다(테두리를 어림잡아 맞출 필요가 없다).
-
-         가름대는 자리 하나에서 내려와 단어 수만큼 갈라진다. 눈금 자리는
-         단어 칸이 균등 분할이라는 데서 나온다 — n 개면 각 칸의 가운데는
-         (2i+1)/2n 이다. 단어를 하나 더 넣거나 빼도 선이 따라온다.
-
-         가운데 칸에는 눈금을 세우지 않는다. 자리에서 내려온 줄기가 가름대를
-         지나 그대로 그 칸에 닿기 때문이다 — 눈금을 하나 더 세우면 거의 같은
-         자리에 세로줄이 둘 서서, 이어진 선이 아니라 어긋난 선으로 보인다. */
-      var n = a.words.length, half = 50 / n, mid = n % 2 ? (n - 1) / 2 : -1;
+      /* 갈아 끼우는 자리를 문장 한가운데에 두고, 바꿔 넣을 말을 그 자리 위아래로
+         쌓는다. 예전에는 단어들을 문장 아래에 한 줄로 늘어놓고 점선 가름대로
+         자리와 이었는데, 선을 눈으로 따라가야 「이 칸이 저 자리에 들어간다」 가
+         읽혔다. 위아래로 포개 두면 같은 말을 선 없이 한다 — 자리가 곧 그 칸이고,
+         나머지는 그 자리에 들어갈 후보로 보인다.
+         첫 낱말이 위, 나머지가 아래다. 칸 하나가 45.7 을 먹으므로 셋을 넘기면
+         그림 자리(185.75)를 넘는다 — 후보는 둘이면 족하다. */
+      var alt = function (w) { return '<b class="pat-alt">' + w + "</b>"; };
       return '<div class="sp-pat">' +
-          '<div class="pat-line"><span>' + a.pre + '</span>' +
+          '<span class="pat-pre">' + a.pre + '</span>' +
+          '<span class="pat-stack">' +
+            (a.words[0] ? alt(a.words[0]) : "") +
             '<b class="pat-slot">' + a.slot + '</b>' +
-            '<span>' + a.post + '</span></div>' +
-          '<div class="pat-fan" aria-hidden="true">' +
-            '<i class="pf-bar" style="left:' + half + '%;right:' + half + '%"></i>' +
-            a.words.map(function (w, i) {
-              return i === mid ? ""
-                : '<i class="pf-t" style="left:' + (half * (2 * i + 1)) + '%"></i>';
-            }).join("") +
-          '</div>' +
-          '<div class="pat-words">' +
-            a.words.map(function (w) { return "<span>" + w + "</span>"; }).join("") +
-          '</div>' +
+            a.words.slice(1).map(alt).join("") +
+          '</span>' +
+          '<span class="pat-post">' + a.post + '</span>' +
         '</div>';
     }
     /* 대사는 레슨의 대화 부품을 그대로 쓴다 — .turn > .who(얼굴 + 이름) + .bubble.
@@ -1058,6 +1044,26 @@
     var ICON = '<span class="avatar icon"><svg viewBox="0 0 24 24" aria-hidden="true">' +
       '<path fill="currentColor" d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2.5c-4.7 0-8.5 2.6-8.5 5.8V22h17v-1.7c0-3.2-3.8-5.8-8.5-5.8Z"/>' +
       '</svg></span>';
+    /* 장면 사진이 있는 코스는 대사를 그 위에 얹는다. 얼굴 아이콘과 이름표를
+       뗀 자리에 사진이 들어서면, 「누가 하는 말인가」 를 배역 이름이 아니라
+       장면이 말해 준다 — 드라마 코스가 파는 것이 바로 그 장면이라서다.
+       사진이 없는 코스(여행 · 반말 · 프리토킹)는 그대로 얼굴 있는 대화로 선다. */
+    if (a.pics) {
+      return '<div class="sp-scene">' +
+          '<span class="sc-pics" aria-hidden="true">' +
+            a.pics.map(function (k) {
+              var s = srcOf(".pic-src", "pic", k);
+              return s ? '<img src="' + s + '" alt="">' : "";
+            }).join("") +
+          '</span>' +
+          '<span class="sc-lines">' +
+            a.turns.map(function (t) {
+              return '<span class="sc-b' + (t[0] === "me" ? " me" : "") + '">' +
+                hlText(t[1]) + '</span>';
+            }).join("") +
+          '</span>' +
+        '</div>';
+    }
     var pic = a.face ? srcOf(".face-src", "face", a.face) : "";
     return '<div class="sp-talk">' + a.turns.map(function (t) {
       var me = t[0] === "me";
@@ -1127,22 +1133,23 @@
       curli.innerHTML =
         '<div class="hy hy-goal">' +
           headHTML("목표 도착",
-                   g ? Math.max(1, Math.round(unit)) + suf + " 뒤" : "",
+                   g ? "완주" : "",
                    k,
-                   g ? doMark(pick.why[0]) : '<i>?</i>',
+                   g ? doMark("goal") : '<i>?</i>',
                    g ? g.t : "목표를 고르면 여기가 채워져요",
                    !g) +
-          /* 도착 그림 · 그림 한 장 아래로 곧게 내려오는 한 줄기.
-             앞의 세 장이 모두 가운데로 모이는 그림이라 이 장만 왼쪽 글 + 오른쪽
-             그림이면 넘길 때 축이 튄다. 그리고 넉 줄(레벨·한 줄·급수·설명)을
-             쌓느라 사이 간격이 저마다 달랐다 — 셋으로 줄이고 리듬을 하나로 맞춘다.
-             TOPIK 의 설명 문장은 뺐다. 급수만 남겨도 파는 데 모자라지 않고,
-             그 자리는 이미 카드 맨 아래 설명이 맡고 있다. */
+          /* 도착은 앞의 세 장과 다른 꼴로 선다 — 코스 카드가 「무엇을 하는가」 를
+             보여 준다면 이 장은 「그래서 어디에 닿는가」 라, 도착한 자리를 연둣빛
+             판 하나로 감싸 상장처럼 둔다. 그림은 왼쪽, 닿은 레벨은 오른쪽이다.
+             TOPIK 급수는 뺐다 — 파는 것은 급수가 아니라 「이만큼 말하게 된다」 고,
+             그 말은 바로 옆 두 줄이 이미 하고 있다. */
           '<div class="hy-stage"><div class="sp-goal">' +
             '<img class="gl-face" src="' + srcOf(".lv-src", "lv", lv) + '" alt="">' +
-            '<b class="gl-lv">Lv.' + lv + '</b>' +
-            '<p class="gl-line">' + d.line + '</p>' +
-            '<span class="gl-cert">TOPIK ' + d.cert[0] + '</span>' +
+            '<span class="gl-body">' +
+              '<span class="gl-top"><b class="gl-lv">Lv.' + lv + '</b>' +
+                '<i class="gl-up">Level UP!</i></span>' +
+              '<p class="gl-line">' + d.line + '</p>' +
+            '</span>' +
           '</div></div>' +
           '<div class="hy-cap">' + why + '</div>' +
         '</div>';

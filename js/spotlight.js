@@ -59,6 +59,10 @@
     ".br-cn", ".br-ko", ".sw-from", ".sw-to",
     ".combi-nouns > span", ".combi-ends > span", ".choose-sentence",
     ".bubble > .korean", ".bubble > .translation",
+    // 뜻과 쓰임 상자의 앵커. 상자 전체는 .section-subtitle 로 이미 짚히지만,
+    // 이 컴포넌트가 있는 이유가 "이 일본어를 보세요" 라서 그 두 줄은 따로
+    // 짚을 수 있어야 한다. 읽기(.anchor-ko)는 튜터가 소리 내어 줄 때 짚는다.
+    ".anchor-ja", ".anchor-ko",
     // 한글 덱의 글자 부품
     // .read-item is the block (card); .read-chip and .mouth are the parts
     // inside it, reached by the second tap.

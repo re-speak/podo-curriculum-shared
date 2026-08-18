@@ -31,6 +31,17 @@
 (function () {
   "use strict";
 
+  var englishDeck = document.querySelector(
+    'meta[name="podo:target-language"][content="en"]'
+  );
+  var copy = englishDeck ? {
+    placeholder: "Write a message for the learner",
+    label: "Message to the learner"
+  } : {
+    placeholder: "학생에게 전하고 싶은 말을 자유롭게 적어 주세요",
+    label: "학생에게 전하는 말"
+  };
+
   var phone = document.querySelector(".phone");
   if (!phone) return;
 
@@ -51,8 +62,8 @@
        보여요" 같은 설명을 따로 붙이지 않아도 된다. 어미는 덱의 튜터 노트가
        쓰는 해요체(…적어 주세요)에 맞춘다.
        (:placeholder-shown 이 이 문구를 본다. 지우면 칸이 사라진다.) */
-    box.setAttribute("placeholder", "학생에게 전하고 싶은 말을 자유롭게 적어 주세요");
-    box.setAttribute("aria-label", "학생에게 전하는 말");
+    box.setAttribute("placeholder", copy.placeholder);
+    box.setAttribute("aria-label", copy.label);
     box.setAttribute("rows", "2");
     box.setAttribute("autocomplete", "off");
 

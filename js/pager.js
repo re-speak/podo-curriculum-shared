@@ -60,10 +60,22 @@
   var teachBtn = bar.querySelector(".pg-teach");
   var scrub    = bar.querySelector(".pg-scrub");
 
-  /* 학생 앱이 명시한 화면에서만 티칭 모드를 없앤다. 역할이 없으면 레슨을
-     직접 연 내부 공유·검수 화면일 수 있으므로 기존처럼 버튼을 보여 준다. */
+  /* ---- 이 화면이 누구의 것인지가 티칭 모드를 정한다 ----
+     학생이라고 명시된 화면에서는 버튼을 아예 지운다 — 학습자가 켜면 답이
+     전부 열린다. 튜터라고 명시된 화면에서는 버튼을 두고 처음부터 켜 둔다:
+     수업은 티칭 모드로 하는 것이 기본이라, 매 수업 T 를 누르게 하면 누르지
+     않은 채로 진행하는 일이 생긴다(그래도 튜터는 언제든 끌 수 있다).
+     역할이 없으면 레슨을 직접 연 내부 공유·검수 화면일 수 있으므로 예전처럼
+     버튼만 보여 주고 꺼 둔 채로 시작한다.
+
+     "튜터"를 tutor 한 낱말로 못 박지 않는다 — 학생이 아니라고 앱이 명시한
+     역할이면 모두 튜터 쪽으로 본다. 앱이 teacher 처럼 다른 낱말을 넘기게
+     되어도 조용히 꺼진 채로 수업이 나가는 일은 없어야 한다. */
   var lessonContext = window.PODO_LESSON_CONTEXT || {};
-  if (lessonContext.viewerRole === "student" && teachBtn) {
+  var viewerRole = String(lessonContext.viewerRole || "").trim().toLowerCase();
+  var isStudent  = viewerRole === "student";
+  var isTutor    = viewerRole !== "" && !isStudent;
+  if (isStudent && teachBtn) {
     teachBtn.remove();
     teachBtn = null;
   }
@@ -160,11 +172,15 @@
      The tutor flips it to reveal answers; sending it would hand the
      learner the whole key. 공유하지 않는 유일한 상태다. 학생 앱이 명시한
      화면에는 버튼 자체가 없고, 그 밖의 화면에서만 이 핸들러를 붙인다. */
+  function setTeaching(on) {
+    document.body.classList.toggle("teaching", on);
+    if (teachBtn) teachBtn.classList.toggle("on", on);
+    if (window.__revealAnswers) window.__revealAnswers(on);
+  }
+
   if (teachBtn) {
     teachBtn.addEventListener("click", function () {
-      var on = document.body.classList.toggle("teaching");
-      teachBtn.classList.toggle("on", on);
-      if (window.__revealAnswers) window.__revealAnswers(on);
+      setTeaching(!document.body.classList.contains("teaching"));
     });
   }
 
@@ -172,5 +188,10 @@
   // hidden rather than removed, so it can come back without a rewrite.
   phone.classList.add("paged");
   document.body.classList.add("paged");
+  /* 튜터 화면은 켜진 채로 시작한다. show() 보다 먼저 켜는 이유는 유령 답이
+     placeholder 로 들어가면 입력칸 폭이 달라지기 때문이다 — show() 가 첫
+     페이지를 재는 시점에는 이미 켜져 있어야 폭이 맞는다. tutor-notes.js 와
+     stamp.js 는 이 파일 다음에 오므로 처음부터 켜진 body 를 보게 된다. */
+  if (isTutor) setTeaching(true);
   show(0);
 })();
