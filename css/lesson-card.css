@@ -61,6 +61,8 @@
      that component's own business and stays tighter. */
   --item-gap:  16px;
   --line-on:   1.5px solid var(--green-500);
+  --pager-reserve: 118px;
+  --pager-clearance: 88px;
 }
 
 * {
@@ -221,6 +223,10 @@ h1 .title-ja,
 .transition-title .title-ja {
   color: rgba(255, 255, 255, .55);
 }
+
+/* Long English lesson titles leave less room for the Japanese support title.
+   Let the support wrap on transition pages instead of widening the phone. */
+.transition-title .title-ja { white-space: normal; }
 
 /* THE TUTOR'S SPOKEN SCRIPT. blue-100 means exactly one thing in this
    system — the tutor is saying this out loud — so nothing else may take
@@ -1342,6 +1348,7 @@ strong {
   border: 1px solid var(--gray-200);
   border-radius: 16px;
   background: #fff;
+  container-type: inline-size;
 }
 
 .irregular-pair-head {
@@ -1390,6 +1397,11 @@ strong {
 .irregular-pair .pair-arrow {
   color: var(--gray-400);
   font-weight: 700;
+}
+
+@container (max-width: 340px) {
+  .irregular-pair-card { padding: 18px; }
+  .irregular-pair-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* ---------- choose-an-option activity ---------- */
@@ -1549,6 +1561,7 @@ strong {
   border: 1px solid var(--gray-200);
   border-radius: 12px;
   background: #fff;
+  container-type: inline-size;
 }
 
 .word-choice-card > .translation {
@@ -1593,6 +1606,16 @@ strong {
 .choose-row.word-choice .sep {
   margin: 0;
   font-size: 16px;
+}
+
+@container (max-width: 320px) {
+  .word-choice-sentence { font-size: 16px; }
+  .choose-row.word-choice { gap: 2px; }
+  .choose-row.word-choice .opt {
+    padding: 4px 6px;
+    font-size: 14px;
+  }
+  .choose-row.word-choice .sep { font-size: 14px; }
 }
 
 /* note boxes always stack vertically — the lesson lives in a phone-width
@@ -1694,7 +1717,7 @@ input.is-spot, textarea.is-spot { outline-width: 2.5px; outline-offset: 2px; }
    the two move together. Scroll decks have no bar and want no such gap —
    hence the .paged scope instead of one number for everybody. */
 .is-spot { scroll-margin: 16px; }
-.phone.paged .is-spot { scroll-margin-bottom: 118px; }
+.phone.paged .is-spot { scroll-margin-bottom: var(--pager-reserve); }
 
 /* ---------- shared highlighter (runtime/js/highlight.js) ----------
    A marker stroke over the text, mirrored to the other screen. Persistent —
