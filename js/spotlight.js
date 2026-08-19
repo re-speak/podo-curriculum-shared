@@ -216,6 +216,55 @@
     return false;
   }
 
+  /* ---- 켜진 자리로 화면을 데려간다 ----
+     긴 페이지에서는 짚어 준 블록이 화면 밖에 있는 일이 잦았다. 상대가 활동을
+     위에서 아래로 옮겨 갈 때마다 받는 쪽은 손으로 굴려 그것을 찾아야 했고,
+     찾는 동안 "여기 보세요" 는 아무 데도 가리키지 않는다.
+
+     규칙은 scrollIntoView 의 block:"nearest" 와 같다 — 이미 다 보이면 움직이지
+     않고, 잘렸으면 잘린 쪽이 들어올 만큼만 움직인다. 가운데로 끌어오지 않는다.
+     그래서 누가 짚었는지 따로 가르지 않는다: 내가 누른 것은 이미 눈앞에 있어
+     아무 일도 안 일어나고, 화면 밖에서 켜진 것 — 곧 상대가 짚은 것 — 에서만
+     움직인다. 한 자리에서 두 경우가 다 맞으니 분기를 둘 이유가 없다.
+
+     그런데 그 계산을 scrollIntoView 에 맡기지 않고 여기서 직접 한다. 이유는
+     하나뿐이고 재 보고 알았다: 크로미움의 부드러운 경로는 scroll-margin 을
+     끝까지 적용하지 않는다. 같은 블록·같은 화면에서 behavior:"instant" 는
+     484 로 정확히 가는데 "smooth" 는 434 에 멈춰(열여섯 번을 재도 434),
+     블록 아래 26px 이 페이저 바 뒤에 깔렸다. 즉 부드럽게 두면 이 함수가 하기로
+     한 약속("아래가 보이게")을 못 지킨다. 그렇다고 순간이동을 시키면 방금
+     보던 자리를 잃는다 — 스크롤은 "여기서 저기로 갔다" 를 눈으로 잇는 일이라
+     그 사이를 지우면 도착한 곳을 알아보는 데 오히려 시간이 든다.
+     그래서 자리는 우리가 정하고(정확), 가는 길은 브라우저에 맡긴다(부드럽게).
+
+     여백의 숫자는 여전히 CSS 에 있다(.is-spot 의 scroll-margin). 여기서는 그걸
+     읽어 쓸 뿐이라, 페이저가 얼마나 높은지는 계속 레이아웃이 아는 일로 남는다.
+
+     움직임을 줄여 달라고 한 사람에게는 그냥 데려다 놓는다. behavior 를 직접
+     건네는 순간 CSS 의 scroll-behavior 는 이 호출에 관여하지 못하므로, 그
+     판단도 여기서 같이 해야 한다 — 미디어 쿼리에 맡겨 둘 수가 없다.
+
+     한 가지 좁아진 것: 문서만 굴린다. 덱은 .phone 한 줄로 흐르는 평평한 구조라
+     블록과 문서 사이에 스크롤 상자가 없어서 지금은 같은 결과지만, 언젠가 속으로
+     굴러가는 상자를 들이면 그 안의 블록은 이 함수가 못 데려온다. */
+  var LESS_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  function reveal(host) {
+    if (!host.getClientRects().length) return;   // 안 보이는 장이면 판단하지 않는다
+    var cs = getComputedStyle(host);
+    var r = host.getBoundingClientRect();
+    var top = r.top - (parseFloat(cs.scrollMarginTop) || 0);
+    var bottom = r.bottom + (parseFloat(cs.scrollMarginBottom) || 0);
+    var vh = document.documentElement.clientHeight;
+    var delta;
+    if (top >= 0 && bottom <= vh) return;        // 다 보인다 — 손대지 않는다
+    if (top < 0 && bottom > vh) return;          // 이미 화면을 덮고 있다
+    if (bottom - top > vh) delta = top;          // 화면보다 큰 블록 → 위를 맞춘다
+    else if (top < 0) delta = top;               // 위가 잘렸다 → 내려간다
+    else delta = bottom - vh;                    // 아래가 잘렸다 → 그만큼만 올린다
+    window.scrollBy({ top: delta, behavior: LESS_MOTION.matches ? "instant" : "smooth" });
+  }
+
   // 정확히 하나만 켜거나, 아무것도 안 켠다. 멱등: 같은 인자 → 같은 결과.
   function light(spot, by) {
     clearLit();
@@ -229,6 +278,8 @@
     if (by === "student") host.classList.add("is-spot-student");
     if (el !== host) host.classList.add("is-spot-field");
     if (needsInsetRing(host)) host.classList.add("is-spot-in");
+    reveal(host);                          // 클래스가 다 붙은 뒤에 —
+                                           // 여백(scroll-margin)이 그 클래스에 걸려 있다
     current = spot;
     currentBy = by === "student" ? "student" : "tutor";
   }

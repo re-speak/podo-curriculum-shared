@@ -8,6 +8,8 @@
      input.slot-input[data-answer]   점선 알약에 타이핑. 답 길이에 맞춰 폭을 잡는다.
      input.space-input[data-answer]  채점하는 답 칸.
      textarea.free-input             자유 작문 칸. 쓴 만큼 자란다.
+     textarea.phrase-input[data-answer]
+                                     문구 단위 채점 칸. 폭을 넘으면 줄바꿈해 자란다.
      .build-zone[data-a]             칩을 받는 트레이. data-sync-kind="order".
      .choose-row .opt                둘 중 하나 고르기. data-correct 가 정답 쪽.
      .mission li                     체크리스트 토글.
@@ -105,7 +107,7 @@ window.lessonSync = window.lessonSync || {
 
   // 여기서는 보내지 않는다. 보드가 input 이벤트를 보고 값을 다시 읽어
   // 내보낸다(IME 조합 중에는 붙잡아 둔다). 이 함수는 채점만 한다.
-  function wireInput(input) {
+  function wireInput(input, valueSetHandledElsewhere) {
     input.addEventListener("input", function () { grade(input, false); });
     input.addEventListener("blur", function () { grade(input, true); });
     input.addEventListener("keydown", function (e) {
@@ -114,7 +116,9 @@ window.lessonSync = window.lessonSync || {
     /* 채점은 공유되지 않는 값이라 화면마다 스스로 매긴다 — 그런데 상대가 쓴
        글에는 input 이벤트가 없어서 매길 기회 자체가 없었다. 학습자가 답을
        맞혀도 튜터 화면의 칸은 채점 전 그대로였다. */
-    onValueSet(input, function (i) { grade(i, false); });
+    if (!valueSetHandledElsewhere) {
+      onValueSet(input, function (i) { grade(i, false); });
+    }
   }
 
   /* 자유 작문 칸은 쓴 만큼 자란다 — 답이 몇 줄이 될지 우리가 미리 알 수 없다.
@@ -125,7 +129,11 @@ window.lessonSync = window.lessonSync || {
   function grow(ta) {
     if (!ta.offsetParent) return;      // 지금 장이 아니다 — display:none 은 잴 수 없다
     ta.style.height = "auto";
-    ta.style.height = ta.scrollHeight + "px";
+    var cs = getComputedStyle(ta);
+    var border = cs.boxSizing === "border-box"
+      ? parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth)
+      : 0;
+    ta.style.height = Math.ceil(ta.scrollHeight + border) + "px";
   }
 
   // 그래서 장이 바뀔 때 페이저가 이 줄을 부른다. 숨어 있는 동안 상대가 써 넣은
@@ -136,8 +144,17 @@ window.lessonSync = window.lessonSync || {
 
   // 타이핑만이 아니라 보드가 상대의 글을 넣어 줄 때도 자라야 한다.
   function autoGrow(ta) {
-    onValueSet(ta, grow);
-    ta.addEventListener("input", function () { grow(ta); });
+    onValueSet(ta, function (field) {
+      if (field.classList.contains("phrase-input")) sizeToAnswer(field);
+      grow(field);
+      // phrase-input 은 자유 작문처럼 자라지만, slot-input 처럼 정답도 있다.
+      // 원격 화면에서 value 가 직접 들어왔을 때도 두 동작을 모두 다시 계산한다.
+      if (field.classList.contains("phrase-input")) grade(field, false);
+    });
+    ta.addEventListener("input", function () {
+      if (ta.classList.contains("phrase-input")) sizeToAnswer(ta);
+      grow(ta);
+    });
     grow(ta);
   }
 
@@ -158,17 +175,29 @@ window.lessonSync = window.lessonSync || {
     ruler.style.font = cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
     ruler.style.letterSpacing = cs.letterSpacing;
     ruler.textContent = input.dataset.answer;
+    var contentWidth = ruler.getBoundingClientRect().width;
+    // 정답보다 길게 말한 문구는 카드 끝까지 먼저 넓어지고, 그다음 줄을
+    // 바꾼다. 정답보다 짧게 썼다고 처음 보인 답 칸이 덜컥 줄어들지는 않는다.
+    if (input.classList.contains("phrase-input") && input.value.trim()) {
+      ruler.textContent = input.value;
+      contentWidth = Math.max(contentWidth, ruler.getBoundingClientRect().width);
+    }
     var pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
-    // 10px 은 글자가 테두리에 닿지 않을 만큼의 여유. 답보다 긴 답을 쓰는
-    // 학생은 어차피 이 폭을 넘기므로 여기서 미리 벌어 두지 않는다.
-    input.style.width = Math.ceil(ruler.getBoundingClientRect().width + pad) + 10 + "px";
+    // 10px 은 글자가 테두리에 닿지 않을 만큼의 여유. phrase-input 은 현재
+    // 말한 내용까지 재고, 카드 끝에서 멈추는 일은 CSS max-width 가 맡는다.
+    input.style.width = Math.ceil(contentWidth + pad) + 10 + "px";
   }
 
   /* Pretendard 는 CDN 웹폰트다. 처음 재는 시점에는 아직 대체 글꼴일 수 있고,
      그 폭으로 굳으면 글꼴이 바뀐 뒤 칸만 어긋난 채 남는다. 폰트가 정해지면
      한 번 더 잰다(이미 캐시돼 있으면 같은 값이 나오므로 화면은 그대로다). */
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(function () { sized.forEach(sizeToAnswer); });
+    document.fonts.ready.then(function () {
+      sized.forEach(function (field) {
+        sizeToAnswer(field);
+        if (field.tagName === "TEXTAREA") grow(field);
+      });
+    });
   }
 
   // 점선 알약. 답 길이에 맞춰 폭을 잡는다. data-answer 가 없는 칸(이름을 적는
@@ -177,6 +206,16 @@ window.lessonSync = window.lessonSync || {
     sizeToAnswer(input);
     sized.push(input);
     wireInput(input);
+  });
+
+  // 마지막 말하기 단계의 빈칸은 문법 한 단어가 아니라, 목표 패턴과 그 안에
+  // 끼워 넣는 내용을 함께 말하는 문구다. input 은 줄바꿈할 수 없으므로 같은
+  // 점선 칸 모양의 textarea 를 쓰고, 답의 자연스러운 폭까지 넓힌 뒤 카드 폭에
+  // 닿으면 안에서 줄을 바꿔 높이로 자라게 한다.
+  document.querySelectorAll("textarea.phrase-input[data-answer]").forEach(function (field) {
+    sizeToAnswer(field);
+    sized.push(field);
+    wireInput(field, true);            // value setter 는 autoGrow 가 둘 다 처리한다
   });
 
   document.querySelectorAll("input.space-input[data-answer]").forEach(wireInput);

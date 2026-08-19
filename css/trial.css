@@ -4996,13 +4996,15 @@ body.paged { padding-bottom: 0; }
    ============================================================ */
 
 /* ---------- typed blanks ---------- */
-.slot-input.correct {
+.slot-input.correct,
+.phrase-input.correct {
   border-style: solid;
   background: var(--green-100);
   border-color: var(--green-500);
 }
 
-.slot-input.wrong {
+.slot-input.wrong,
+.phrase-input.wrong {
   border-color: #d9534f;
   background: #fdf1f1;
   color: #d9534f;
