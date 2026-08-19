@@ -277,9 +277,22 @@
           var same = !a.length || !b.length || a.join(" ") === b.join(" ");
           block.classList.toggle("has-diff", !same);
           out.innerHTML = same ? "" : render(a, b);
-          fit(said); fit(fixed);
         }
-        fit(memo);
+        /* 재는 일은 값이 바뀔 때가 아니라 매번 한다.
+
+           fit() 은 화면에 없는 칸에서 물러난다 — scrollHeight 가 0 이라
+           재봐야 높이를 0 으로 박을 뿐이다. 그런데 상대가 쓴 글은 이 화면이
+           그 칸을 아직 안 보여 줄 때 도착하는 쪽이 오히려 흔하다: 학생이
+           앞 장에 있으면 그 장 전체가 display:none 이고, 두 번째 칸은 글이
+           들어오고 나서야 열린다. 값이 바뀐 그 순간에만 쟀더니, 물러난
+           뒤에 다시 잴 일이 영영 오지 않아 — key 가 그대로라 이 블록을
+           건너뛴다 — 칸이 한 줄 높이에 박힌 채로 열렸다. overflow 가
+           hidden 이라 둘째 줄부터는 그냥 잘려 나간다. 줄바꿈이 전달되지
+           않은 것처럼 보이지만, 값은 처음부터 멀쩡히 와 있다.
+
+           노트 칸이 이 증상만 없었던 것도 같은 이유다 — 아래 한 줄만
+           밖에 있었다. 셋을 같이 두면 성격이 갈리지 않는다. */
+        fit(said); fit(fixed); fit(memo);
         // 적힌 것이 이 칸의 성격을 정한다. 노트가 먼저다 — 노트로 연 칸에는
         // 학생 문장 쪽이 아예 없으니, 둘이 같이 차는 일이 없다.
         return memo.value.trim() ? "note"
