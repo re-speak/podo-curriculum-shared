@@ -556,11 +556,12 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
 
 .who-name {
   color: #575753;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 800;
   line-height: 1.2;
   text-align: center;
   word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 /* blue nudge folded into the foot of the learner's bubble:
@@ -1895,6 +1896,7 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
   border-radius: 0 0 16px 16px;
   background: var(--gray-50);
   text-align: center;
+  container-type: inline-size;
 }
 
 .sent-more > div {
@@ -1917,6 +1919,10 @@ body:not(.no-yomi) .sent-more .yomi + .translation { margin-top: 7px; }
   color: var(--gray-500);
   font-size: 13px;
   font-weight: 700;
+}
+
+@container (max-width: 340px) {
+  .sent-more .translation { font-size: 12.5px; }
 }
 
 /* ---------- intonation: the ending drawn, not written ----------
@@ -2478,6 +2484,7 @@ body.teaching .section-subtitle.pattern-meaning:has(+ .tutor-note) {
   display: grid;
   gap: var(--item-gap);
   margin-top: 24px;
+  container-type: inline-size;
 }
 
 .br-row {
@@ -2524,6 +2531,20 @@ body.teaching .section-subtitle.pattern-meaning:has(+ .tutor-note) {
   font-size: 13px;
   font-weight: 800;
   letter-spacing: .08em;
+}
+
+/* A 360px phone leaves about 318px for the bridge. Keep the equal columns,
+   but step both languages and the arrow down together so six-glyph loanwords
+   and ordinary English equivalents stay inside the row. */
+@container (max-width: 340px) {
+  .br-row {
+    grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr);
+    gap: 4px;
+    padding: 12px 8px;
+  }
+  .br-cn,
+  .br-ko { font-size: 21px; }
+  .br-eq { font-size: 18px; }
 }
 
 /* ---------- the 16, shown as the multiplication it is ----------
@@ -4382,6 +4403,7 @@ button.opt-row:active { transform: scale(.99); }
 .blk-item .cap small,
 .letter-card > .english,
 .model-line > .translation,
+.sent-hero > .translation,
 .word-card .mean,
 .sign .english,
 .uspc .s,
@@ -4837,8 +4859,8 @@ body { padding-bottom: 84px; }         /* the bar must not cover the last line *
 
 /* a page on its own should fill the screen rather than leave a dead band
    above the bar — the :has() centring rules then have room to work */
-.phone.paged > .pg-on { min-height: calc(100vh - 118px); }
-@supports (height: 100dvh) { .phone.paged > .pg-on { min-height: calc(100dvh - 118px); } }
+.phone.paged > .pg-on { min-height: calc(100vh - var(--pager-reserve)); }
+@supports (height: 100dvh) { .phone.paged > .pg-on { min-height: calc(100dvh - var(--pager-reserve)); } }
 
 /* Paged mode fills the screen with the single active page, which already
    reserves room for the bar (the -118px above). The scroll-mode chrome that
@@ -4848,13 +4870,12 @@ body { padding-bottom: 84px; }         /* the bar must not cover the last line *
 .phone.paged { min-height: 0; }
 body.paged { padding-bottom: 0; }
 
-/* The bar floats over the bottom of the screen. On a short page that is just
-   empty card, so nothing to clear; on a page tall enough to scroll, the last
-   line has to stop above it. Put that clearance INSIDE the scrollable page
-   (only .section pages ever grow tall — brand/transition pages stay short),
-   so it travels with the scroll instead of stacking onto every page the way
-   the body padding did. */
-.phone.paged > .section.pg-on { padding-bottom: 88px; }
+/* The bar floats over the bottom of the screen. On a short page this is empty
+   card; on any page tall enough to scroll, its last line must stop above the
+   bar. Put the clearance INSIDE the active page so it travels with the scroll.
+   Transition and goal pages can also grow at narrow widths, so this must not
+   be limited to .section pages. */
+.phone.paged > .pg-on { padding-bottom: var(--pager-clearance); }
 
 .pager {
   position: fixed;
