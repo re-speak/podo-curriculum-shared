@@ -670,6 +670,18 @@ p {
   font-weight: 700;
 }
 
+/* Inline answer controls participate in the surrounding sentence's line box.
+   When two 34px slot inputs wrap onto consecutive rows, ordinary text leading
+   leaves their borders touching even though the markup is valid. Give every
+   controlled fill sentence that contains a slot enough row height for an 8px+
+   visual gap at the supported English widths. This is deliberately keyed to
+   the component, not to one track or page, so future generated decks inherit
+   the same protection. */
+html:has(meta[name="podo:target-language"][content="en"])
+  .answer-fill .korean:has(.slot-input) {
+  line-height: 2.35;
+}
+
 /* A dialogue blank is sized to its answer like every other blank, so a long
    one wraps below its lead-in rather than being given the line outright. What
    it needs there is room: at the normal 1.45 the 34px pill clears the text
@@ -687,9 +699,8 @@ p {
    now sits 19px below the border whether it wrapped or not, where the pill's
    height used to make the two disagree.
 
-   Scoped to .dialogue because only 대화 채우기 puts a clause-length blank
-   after a clause-length lead-in. The 빈칸 채우기 drills are short lead-ins in
-   .task-block and want the tight default. */
+   Phrase inputs are still scoped to .dialogue because their 38px height needs
+   slightly more leading than the 34px controlled-fill slots above. */
 .dialogue .answer-fill .korean {
   line-height: 2.7;
 }
