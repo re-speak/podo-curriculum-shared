@@ -676,7 +676,9 @@ p {
    above it by 3px and reads as stuck to it. Row spacing is line-height's job —
    a margin on the pill would work on the wrapped rows and shove the rows where
    it *does* fit off their own baseline, since the same element is doing both.
-   2.2 lands the wrapped gap at 14px.
+   The phrase field later grew from 34px to 38px, which reduced the actual
+   wrapped gap to 3px at English lesson widths. 2.7 restores a visibly separate
+   row without changing the field itself.
 
    Leading is split above and below the line, so the taller line would also
    push the first row down off the box's top padding; the padding here gives
@@ -689,7 +691,7 @@ p {
    after a clause-length lead-in. The 빈칸 채우기 drills are short lead-ins in
    .task-block and want the tight default. */
 .dialogue .answer-fill .korean {
-  line-height: 2.2;
+  line-height: 2.7;
 }
 
 .dialogue .answer-fill {
