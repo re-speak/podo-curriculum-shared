@@ -89,13 +89,22 @@
     ".blk-item", ".part", ".kana", ".syl", ".eq", ".build", ".combo > span",
     ".word-card", ".sign", ".payoff", ".mouth", ".brand-mascot",
     // 마무리 — 오늘의 결과와 닫는 장
-    ".combi", ".combi-nouns", ".combi-ends", ".end-head", ".end-card",
+    ".combi", ".combi-nouns", ".combi-ends", ".end-head", ".end-card", ".end-report",
     // 풀 트라이얼의 안내·가격·FAQ 페이지. 튜터가 가장 오래 짚어 가며 말하는
-    // 곳인데도 여기 하나도 없었다.
-    ".sub-h", ".fact", ".stat", ".feat", ".rev", ".rev-h", ".arrowline",
-    ".fineprint", ".smallnote", ".sched", ".week", ".tstat > div", ".stg",
-    ".deadline", ".plan2", ".pr", ".incl h4", ".il", ".versus > div", ".switchcard",
-    ".swcall", ".ptable", ".qa2", ".faq-div", ".faq-end",
+    // 곳인데도 여기 하나도 없었다. v3(Figma 「🔥 최종본 🔥」)에서 이 장들이
+    // 통째로 새로 그려졌으므로 어휘도 같이 갈았다.
+    ".limebar", ".sub-h", ".fact", ".stat", ".feat", ".rev", ".rev-h",
+    ".arrowline", ".endline", ".fineprint", ".sched", ".sched-mini > div",
+    ".shot", ".week > div", ".tstat > div", ".tgroup", ".tcard", ".greenbar",
+    // 커리큘럼 다섯 단계 — 카드 하나가 한 단계, 그 안의 실물 조각이 부품이다
+    ".cu-rl", ".cu-card", ".cu-t", ".cu-s", ".cu-demo-h", ".cu-arrow",
+    ".cu-lt", ".cu-pt", ".cu-tone", ".cu-course", ".cu-tp",
+    // 수강료 · 플랜 변경
+    ".fee", ".included", ".inc-list li", ".plan", ".pers", ".pr-offer-box",
+    ".greycard", ".sw-row", ".sw-notes li", ".sw-box",
+    // FAQ
+    ".faq-div", ".faq-card",
+    ".deadline", ".pr",
     // 리포트에서 학생에게 보여 주는 칸들(튜터만 보는 레벨 체크는 뺀다)
     ".rhead", ".rsec-h", ".lvbig", ".topikrow", ".radbox", ".axbars", ".axs",
     ".axtip", ".freq-h", ".tiles > .tile"

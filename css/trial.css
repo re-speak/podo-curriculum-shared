@@ -165,6 +165,15 @@
    프레임과 같아지도록 맞춘 것이라, **그림을 다시 내보내면 여기도 같이 봐야 한다.** */
 .brand-art { position: absolute; left: 30px; bottom: -123px; width: 420px; height: auto; }
 .brand-art.mid { left: 50%; bottom: -97px; width: 409px; transform: translateX(-50%); }
+/* 안내 표지의 마스코트만 프레임 안에 온전히 선다 — 흘러넘치는 두 장과 달리
+   버튼 격자 바로 아래가 자리다.
+
+   화면 아래끝이 아니라 **가운데에 맞춰 세운다.** 이 장은 세로로 가운데 정렬된
+   글 뭉치(제목 10 부제 10 버튼격자 = 339.25px) 하나뿐이고, 페이지 높이는 기기가
+   정한다. 아래끝에 매어 두면 화면이 짧을수록 마스코트가 버튼 쪽으로 밀려 올라와
+   맨 아랫줄을 덮었다. 50% + 135.5px 는 Figma 프레임(915)의 top:593 과 같은 값이면서
+   높이가 달라져도 글 뭉치와의 거리를 그대로 지킨다. */
+.brand-art.menu { left: 120px; top: calc(50% + 135.5px); bottom: auto; width: 225px; height: 252px; }
 
 /* closing page */
 .end-head {
@@ -4154,9 +4163,10 @@ button.opt-row:active { transform: scale(.99); }
    ============================================================ */
 .jump {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 9px;
-  width: 100%;
+  grid-template-columns: repeat(2, 200px);
+  gap: 10px;
+  justify-content: center;
+  width: auto;
   margin-top: 26px;
 }
 
@@ -4173,6 +4183,11 @@ button.opt-row:active { transform: scale(.99); }
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* 표지에는 이제 제목 · 부제 · 마스코트뿐이다. 목차 버튼(.jump/.jbtn)은
+   v3 에서 걷어냈다 — 「전체 요금표」 장이 사라지면서 여섯 칸 중 하나가
+   빌 자리였고, 다섯 칸짜리 2×3 격자는 Figma 표지와 다른 그림이 된다. */
+#p-info .brand-sub { font-weight: 800; }
 
 .jbtn:active { transform: translateY(2px); }
 
@@ -5344,10 +5359,15 @@ body.teaching .tcon { display: block; margin: 0 0 28px; }
    ================================================================ */
 /* 리포트 페이지는 페이지 카드의 테두리를 벗는다 — 초록 카드 넉 장이
    이미 상자라, 그 밖을 한 번 더 두르면 상자가 세 겹이 된다. */
-.rep-page.rep-page {
+.rep-page.rep-page,
+.info-page.info-page {
   margin: 0; padding: 24px 20px 36px;
   border: 0; border-radius: 0; box-shadow: none;
 }
+
+/* 안내 장의 머리 — Figma 는 kicker 18px 줄 바로 밑 6px 에 제목을 둔다 */
+.info-page > .section-kicker { margin-bottom: 0; font-size: 12px; font-weight: 900; line-height: 18px; }
+.info-page > .section-title { margin-top: 6px; font-size: 22px; font-weight: 900; line-height: 32px; letter-spacing: -.44px; }
 .rep-page .rhead { margin-bottom: 4px; }
 .rhead-k { display: block; color: var(--green-500); font-size: 12px; font-weight: 800; letter-spacing: -.02em; }
 .rhead-t { margin: 6px 0 0; font-size: 22px; font-weight: 800; line-height: 1.45; letter-spacing: -.02em; word-break: keep-all; }
@@ -6072,54 +6092,88 @@ body.teaching .lvcheck {
 }
 
 /* 회사 소개 · 앱 리포트 예고처럼 "한 줄 배지 + 큰 제목 + 설명" 꼴의 상자 */
-.fact { margin-top: 14px; padding: 15px; border: 1.5px solid #cdea97; border-radius: 18px; }
-.badges { display: flex; flex-wrap: wrap; gap: 5px; }
-.fact.fill { border-color: #cdea97; background: #f5fde9; }
+/* 테두리는 자리를 먹지 않는다(Figma 의 stroke 처럼) — 20+1 로 안쪽 여백 21px 을
+   내주면서 안쪽 폭은 398px 로 떨어진다. 후기 두 칸(197.5+3+197.5)이 이 폭이다. */
+.fact { margin-top: 16px; padding: 20px; border: 1px solid var(--green-500); border-radius: 24px; background: #f2fcec; }
+.fact-logo { display: block; width: 190px; height: auto; margin-top: 16px; }
+.fact-logo + .fact-s { margin-top: 10px; }
+.badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.fact.fill { border-color: var(--green-500); background: #f2fcec; }
 .badge-dark {
-  display: inline-block; padding: 3px 10px; border-radius: 999px;
-  background: var(--ink); color: var(--lime); font-size: 9.5px; font-weight: 900;
+  display: inline-block; padding: 4px 10px; border-radius: 999px;
+  background: var(--ink); color: #fff; font-size: 12px; font-weight: 700; line-height: 18px;
 }
-.fact-t { margin: 6px 0 0; font-size: 20px; font-weight: 900; letter-spacing: -.04em; }
-.fact.fill .fact-t { font-size: 17px; letter-spacing: -.035em; }
-.fact-s { margin: 6px 0 0; color: #4a5142; font-size: 11.5px; font-weight: 500; line-height: 1.65; word-break: keep-all; }
+.fact-t { margin: 6px 0 0; color: var(--green-500); font-size: 18px; font-weight: 800; letter-spacing: -.36px; line-height: 26px; }
 
-.sub-h { margin: 14px 0 0; font-size: 16px; font-weight: 900; letter-spacing: -.03em; }
+.fact-s { margin: 0; color: #1c1c1c; font-size: 14px; font-weight: 500; line-height: 20.3px; }
+
+.sub-h { margin: 0; font-size: 18px; font-weight: 700; line-height: 26px; letter-spacing: -.02em; }
 /* 상자 안에서 소제목으로 쓸 때는 상자의 안쪽 여백이 이미 자리를 냈다 */
 .fact > .sub-h:first-child { margin-top: 0; }
 .fact > .sub-h + * { margin-top: 10px; }
 .fact-s.lg { font-size: 13px; line-height: 1.62; }
 
-/* 숫자 넉 장 — 하나가 한 가지 사실이라, 상자마다 큰 수 하나만 든다 */
-.statgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
-.stat { padding: 13px 8px 14px 12px; border-radius: 14px; background: #f5fde9; }
-.stat .n { display: block; color: #4a8b24; font-size: 21px; font-weight: 900; letter-spacing: -.045em; line-height: 1.3; }
-.stat .t { display: block; margin-top: 1px; color: #4a5142; font-size: 11.5px; font-weight: 700; }
-/* 숫자가 어디서 나온 값인지 — 큰 수 밑에 아주 작게. 안 읽어도 되는 줄이다 */
-.stat .c { display: block; margin-top: 5px; color: #8a9180; font-size: 9.5px; font-weight: 500; line-height: 1.4; word-break: keep-all; }
-
-/* 후기 — 사진이 먼저 오고 제목은 그 아래. 두 칸 격자.
-   일본어 · 영어 두 묶음이라 묶음마다 제목이 하나씩 붙는다. */
-.rev-h { margin: 16px 0 0; font-size: 13.5px; font-weight: 900; letter-spacing: -.03em; }
-.revgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 9px; margin-top: 9px; align-items: start; }
-.rev img { display: block; width: 100%; height: 113px; border: 1px solid #e7eae0; border-radius: 10px; object-fit: cover; }
-.rev .t { display: block; margin-top: 7px; font-size: 12.5px; font-weight: 900; letter-spacing: -.028em; line-height: 1.44; word-break: keep-all; }
-/* 후기에서 눈이 먼저 닿아야 하는 조각 하나 — 빨강은 이 덱에서 기한과 여기뿐이다 */
-.rev .t b { color: #d51f3c; font-weight: 900; }
-.rev .w { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 7px; color: #8a9180; font-size: 10.5px; font-weight: 700; }
-.rev .w i {
-  padding: 2px 8px; border-radius: 999px; background: #eafdc9; color: #4a8b24;
-  font-size: 10px; font-style: normal; font-weight: 900; white-space: nowrap;
+/* 안내 장의 바깥 상자 — 흰 바탕에 초록 1px. 안내 페이지는 페이지 카드를
+   버리고 전면으로 서므로, 테두리를 가진 상자는 이 한 겹뿐이다. */
+.ocard {
+  margin-top: 16px;
+  padding: 20px;
+  border: 1px solid var(--green-500);
+  border-radius: 24px;
+  background: #fff;
 }
 
-.fineprint { margin: 14px 0 0; color: #8a9180; font-size: 10.5px; font-weight: 500; line-height: 1.62; word-break: keep-all; }
+/* 숫자 넉 장 — 하나가 한 가지 사실이라, 상자마다 큰 수 하나만 든다 */
+.statgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-top: 16px; }
+.stat { padding: 12px 14px; border-radius: 12px; background: #f2fcec; }
+.stat .n {
+  display: flex; align-items: center; min-height: 41px;
+  color: var(--green-500); font-size: 28px; font-weight: 900;
+  letter-spacing: -.44px; line-height: 32px;
+}
+.stat .n em { font-size: 20px; font-style: normal; }
+.stat .t { display: block; margin-top: 4px; color: #1c1c1c; font-size: 16px; font-weight: 700; letter-spacing: -.32px; line-height: 24px; }
+/* 숫자가 어디서 나온 값인지 — 큰 수 밑에 아주 작게. 안 읽어도 되는 줄이다 */
+.stat .c { display: block; margin-top: 1px; color: rgba(0,0,0,.4); font-size: 12px; font-weight: 500; letter-spacing: -.32px; line-height: 16px; word-break: keep-all; }
 
-/* 다음 장으로 넘기는 한 줄 — 페이지의 마지막에만 온다 */
+/* 후기 — 사진이 먼저 오고 제목은 그 아래. 두 칸 격자.
+   일본어 · 영어 두 묶음이라 묶음마다 잉크 칩이 하나씩 붙는다. */
+.rev-h {
+  display: inline-block; margin: 10px 0 0; padding: 4px 10px;
+  border-radius: 999px; background: var(--ink);
+  color: #fff; font-size: 12px; font-weight: 700; line-height: 18px; letter-spacing: 0;
+}
+/* 칸 높이는 고정이다 — 제목이 한 줄인 장과 두 줄인 장이 섞여 있어도 격자가
+   흔들리지 않는다. 일본어 묶음(180)과 영어 묶음(172)의 8px 차이는 Figma
+   프레임 그대로다. */
+.revgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; grid-auto-rows: 180px; margin-top: 8px; align-items: start; }
+.revgrid.tight { grid-auto-rows: 172px; }
+.revgrid + .rev-h { margin-top: 9px; }
+.rev img { display: block; width: 100%; height: 113px; border-radius: 10px; object-fit: cover; }
+.rev .t { display: block; margin-top: 3px; color: #1c1c1c; font-size: 13px; font-weight: 900; letter-spacing: -.325px; line-height: 17px; word-break: keep-all; }
+/* 초록 제목은 「이건 꼭 보세요」 — 묶음마다 두어 장만 든다 */
+.rev.hl .t { color: var(--green-500); }
+.rev .w { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 3px; color: #8a9180; font-size: 10.5px; font-weight: 700; line-height: 15px; }
+.rev .w i {
+  padding: 2px 6px; border-radius: 6px; background: #e8f6d4; color: #4a8b24;
+  font-size: 9.5px; font-style: normal; font-weight: 700; line-height: 13px; white-space: nowrap;
+}
+
+.fineprint { margin: 0; color: rgba(28,28,28,.6); font-size: 14px; font-weight: 500; line-height: 20.3px; word-break: keep-all; }
+
 .arrowline {
   display: flex; gap: 8px; margin-top: 14px; padding: 10px 13px; border-radius: 12px;
   background: #f5fde9; color: var(--green-500); font-size: 12.5px; font-weight: 900;
   letter-spacing: -.02em; line-height: 1.52; word-break: keep-all;
 }
 .arrowline::before { content: "→"; flex: none; }
+
+/* 묶음을 닫는 한 줄 — 초록을 칠하고 흰 글씨. 화살표는 없다. */
+.endline {
+  margin-top: 0; padding: 10px 13px; border-radius: 12px;
+  background: var(--green-500); color: #fff; font-size: 12.5px; font-weight: 900;
+  letter-spacing: -.25px; line-height: 19px;
+}
 
 /* 본문 아래 붙는 회색 참고 상자. 티칭 노트(.tutor-note)와는 다르다 —
    이건 학습자도 읽는다. */
@@ -6129,63 +6183,213 @@ body.teaching .lvcheck {
 .smallnote b { color: var(--ink); font-weight: 900; }
 
 /* 수업의 네 가지 — 큰 말 · 이름 · 한 줄 */
-.featgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
-.feat { padding: 14px 12px 16px 14px; border: 1.5px solid #cdea97; border-radius: 16px; }
-.feat .n { display: block; font-size: 20px; font-weight: 900; letter-spacing: -.04em; }
-.feat .t { display: block; font-size: 12.5px; font-weight: 900; letter-spacing: -.02em; }
-.feat .s { display: block; margin-top: 5px; color: #8a9180; font-size: 11px; font-weight: 500; line-height: 1.55; word-break: keep-all; }
-/* v2 의 제목은 「25분」 이 아니라 「비대면 25분」 이라 두 칸 폭에 들어가지 않는다 */
-.feat .n { font-size: 17px; letter-spacing: -.045em; line-height: 1.25; }
-.feat .t { margin-top: 3px; line-height: 1.35; word-break: keep-all; }
+/* 라임 띠 — 장이 무엇을 파는지 한 줄로 말하는 자리. 상태가 아니라 브랜드다. */
+.limebar {
+  margin: 10px 0 0; padding: 12px 16px; border-radius: 12px;
+  background: var(--lime); color: #1c1c1c;
+  font-size: 16px; font-weight: 700; line-height: 24px;
+}
+
+.featgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+.feat {
+  padding: 20px 15px; border: 1px solid var(--green-500); border-radius: 24px; background: #fff;
+}
+.feat .n { display: block; color: var(--green-500); font-size: 22px; font-weight: 900; letter-spacing: -.44px; line-height: 32px; }
+.feat .t { display: block; margin-top: 4px; color: #1c1c1c; font-size: 16px; font-weight: 700; letter-spacing: -.32px; line-height: 24px; }
+.feat .s { display: block; margin-top: 1px; color: rgba(0,0,0,.4); font-size: 12px; font-weight: 500; letter-spacing: -.32px; line-height: 16px; }
 
 /* 예약·취소 · 이 덱의 유일한 먹색 상자다. 밝은 카드가 이어지는 흐름에서
    한 번 끊어 주는 자리라, 여기 말고는 쓰지 않는다. */
-.sched { margin-top: 14px; padding: 20px 18px; border-radius: 20px; background: var(--ink); }
-.sched .k { display: block; color: var(--lime); font-size: 12px; font-weight: 900; }
-.sched .big { margin: 0; color: #edf3e2; font-size: 26px; font-weight: 900; letter-spacing: -.042em; line-height: 1.31; }
+.sched {
+  margin-top: 16px; padding: 20px; border: 1px solid var(--green-500);
+  border-radius: 24px; background: var(--ink);
+}
+.sched .k {
+  display: inline-block; padding: 4px 10px; border-radius: 999px;
+  background: var(--lime); color: #1c1c1c; font-size: 12px; font-weight: 700; line-height: 18px;
+}
+.sched .big { margin: 10px 0 0; color: #fff; font-size: 18px; font-weight: 700; letter-spacing: -.36px; line-height: 26px; }
 .sched .big em { font-style: normal; color: var(--lime); }
-.sched .s { margin: 0; color: #a3ad94; font-size: 12px; font-weight: 500; line-height: 1.58; word-break: keep-all; }
-.sched-mini { display: flex; gap: 7px; margin-top: 16px; }
-.sched-mini div { flex: 1 1 0; min-width: 0; padding: 10px 4px; border-radius: 12px; background: rgba(255,255,255,.08); text-align: center; }
-.sched-mini .k2 { display: block; color: #98a28a; font-size: 10px; font-weight: 700; }
-.sched-mini .v2 { display: block; color: #edf3e2; font-size: 12.5px; font-weight: 900; letter-spacing: -.028em; }
+.sched .s { margin: 5px 0 0; color: rgba(255,255,255,.8); font-size: 14px; font-weight: 400; line-height: 22px; }
+.sched .s b { font-weight: 800; }
+.sched-mini { display: flex; gap: 8px; margin-top: 10px; }
+.sched-mini div { flex: 1 1 0; min-width: 0; padding: 20px 15px; border-radius: 10px; background: rgba(255,255,255,.2); text-align: center; }
+.sched-mini .k2 { display: block; color: rgba(255,255,255,.4); font-size: 12px; font-weight: 500; letter-spacing: -.32px; line-height: 16px; }
+.sched-mini .v2 { display: block; margin-top: 3px; color: #fff; font-size: 16px; font-weight: 700; letter-spacing: -.32px; line-height: 24px; }
+.sched-mini .v2.sm { font-size: 12px; line-height: 14px; }
+
+/* 리포트 미리보기 — 화면 한 장을 그대로 보여 준다. 아래는 잘려 나가고,
+   잘린 자리가 「스크롤하면 더 있다」 로 읽힌다. */
+.shot {
+  height: 327px; margin-top: 11px; padding-top: 10px; border-radius: 24px;
+  background: #f2fce0; overflow: hidden; text-align: center;
+}
+.shot img { display: block; width: 316px; margin: 5px auto 0; }
+
+.ocard > .shot + .fact { margin-top: 11px; }
+
+/* 초록 칩 — 잉크 칩과 같은 자리에 쓰되, 초록 바탕 위 흰 글씨다 */
+.badge-green {
+  display: inline-block; padding: 4px 10px; border-radius: 999px;
+  background: var(--green-500); color: #fff; font-size: 12px; font-weight: 700; line-height: 18px;
+}
+.badge-green + .fact-t { margin-top: 10px; }
 
 /* ---------- 튜터 ---------- */
-.tstat { display: flex; gap: 8px; margin-top: 14px; text-align: center; }
-.tstat div { flex: 1 1 0; min-width: 0; padding: 12px 6px; border: 1.5px solid #cdea97; border-radius: 14px; }
-.tstat .n { display: block; color: var(--green-500); font-size: 20px; font-weight: 900; letter-spacing: -.04em; }
-.tstat .t { display: block; color: #4a5142; font-size: 11px; font-weight: 700; }
+.tstat { display: flex; gap: 8px; margin-top: 16px; text-align: center; }
+.tstat div { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 14px 6px; border-radius: 16px; background: #f2fce0; }
+.tstat .n { color: var(--green-500); font-size: 20px; font-weight: 900; line-height: 26px; }
+.tstat .t { color: #4a5142; font-size: 12px; font-weight: 700; line-height: 16px; }
 
-.week { display: flex; gap: 5px; }
-.week div { flex: 1 1 0; min-width: 0; text-align: center; }
-.week span { display: block; margin-bottom: 5px; color: #8a9180; font-size: 10.5px; font-weight: 900; }
-.week .sun { color: #d51f3c; }
-.week img { display: block; width: 100%; aspect-ratio: 1; border: 1.5px solid #cdea97; border-radius: 999px; object-fit: cover; }
+/* 요일 여섯 칸 — 매일 다른 튜터를 만날 수 있다는 걸 얼굴로 말한다.
+   토·일만 색이 다른 건 달력의 관습이지 상태가 아니다. */
+.week { display: flex; gap: 2px; margin-top: 10px; padding: 0 3px; border-radius: 10px; }
+.week div { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 0; border-radius: 10px; background: #e7f5ff; }
+.week span { color: var(--gray-500); font-size: 11px; font-weight: 900; line-height: 16px; }
+.week span.sat { color: #4d87c1; }
+.week span.sun { color: #e5484d; }
+.week img { display: block; width: 46px; height: 46px; border: 1.5px solid #8491b0; border-radius: 999px; object-fit: cover; }
 
-.tgroup + .tgroup { margin-top: 16px; }
-.tg-head { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
-.tg-tag { flex: none; padding: 5px 13px; border-radius: 999px; font-size: 12.5px; font-weight: 900; letter-spacing: -.02em; }
-.tg-head p { margin: 0; color: #8a9180; font-size: 11.5px; font-weight: 500; line-height: 1.48; word-break: keep-all; }
-.tutgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
-.tcard img { display: block; width: 100%; aspect-ratio: 1; border: 1.5px solid; border-radius: 14px; object-fit: cover; }
-.tcard .nm { display: block; margin-top: 6px; font-size: 14px; font-weight: 900; letter-spacing: -.03em; }
-.tcard .nm small { color: #8a9180; font-size: 10.5px; font-weight: 700; }
-.tcard .tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 6px; }
-.tcard .tags span { padding: 2px 7px; border-radius: 999px; color: #2a2e22; font-size: 9.5px; font-weight: 900; }
-/* 관심사마다 색이 하나 — 태그·사진 테두리·칩 바탕이 같은 계열로 묶인다.
-   이 색은 상태가 아니라 분류다(초록/라임은 여기 쓰지 않는다). */
-.tgroup.g1 .tg-tag { background: #7ea3ff; }
-.tgroup.g1 .tcard img { border-color: #7ea3ff; }
-.tgroup.g1 .tcard .tags span { background: #edf2ff; }
-.tgroup.g2 .tg-tag { background: #fb97ff; }
-.tgroup.g2 .tcard img { border-color: #fb97ff; }
-.tgroup.g2 .tcard .tags span { background: #fdeffe; }
-.tgroup.g3 .tg-tag { background: #c0ff6d; }
-.tgroup.g3 .tcard img { border-color: #c0ff6d; }
-.tgroup.g3 .tcard .tags span { background: #f2fee0; }
-.tgroup.g4 .tg-tag { background: #8ec743; }
-.tgroup.g4 .tcard img { border-color: #8ec743; }
-.tgroup.g4 .tcard .tags span { background: #f0f8e4; }
+.tgroup { margin-top: 25px; }
+.tg-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.tg-tag { flex: none; padding: 5px 12px; border-radius: 999px; color: #1c1c1c; font-size: 12px; font-weight: 900; line-height: 17px; }
+.tg-head p { margin: 0; color: var(--gray-500); font-size: 11px; font-weight: 500; line-height: 16px; }
+.tutgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+/* 두 장짜리 묶음도 칸 너비는 셋일 때와 같다 — 사진 크기가 묶음마다 달라지면
+   같은 격자로 안 읽힌다 */
+.tutgrid.short { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tutgrid.short > :nth-child(n+3) { display: none; }
+.tcard { display: flex; flex-direction: column; gap: 7px; }
+.tcard img { display: block; width: 100%; height: 132px; border: 1.5px solid; border-radius: 12px; object-fit: cover; }
+.tcard .nm { color: #1c1c1c; font-size: 12px; font-weight: 900; letter-spacing: -.24px; line-height: 17px; }
+.tcard .tags { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.tcard .tags span { padding: 3px 7px; border-radius: 6px; background: var(--gray-100); color: #4a5142; font-size: 9.5px; font-weight: 700; line-height: 14px; }
+/* 묶음마다 제 색 — 태그와 사진 테두리가 같은 색이라 어느 묶음인지 눈으로 이어진다 */
+.tgroup.kdrama .tg-tag { background: #cfe3ff; } .tgroup.kdrama .tcard img { border-color: #7ea3ff; }
+.tgroup.travel .tg-tag { background: #ffd7e5; } .tgroup.travel .tcard img { border-color: #fb97ff; }
+.tgroup.basic  .tg-tag { background: var(--lime); } .tgroup.basic .tcard img { border-color: #c0ff6d; }
+.tgroup.biz    .tg-tag { background: #dec4f2; } .tgroup.biz .tcard img { border-color: #a645f0; }
+
+/* 묶음을 닫는 초록 띠 — 흰 글씨 한 줄 */
+.greenbar {
+  display: flex; align-items: center; min-height: 56px; margin: 10px 0 0;
+  padding: 10px 15px; border-radius: 14px; background: var(--green-500);
+  color: #fff; font-size: 14px; font-weight: 600; letter-spacing: -.5px; line-height: 20.3px;
+}
+
+/* ---------- 수강료 ----------
+   0엔 세 줄로 시작해서 초록 한 줄이 실제 금액을 말한다. 초록은 여기서
+   「이게 전부입니다」 이고, 그 안에 든 것이 바로 아래 연한 상자에 열린다. */
+.feetable { margin-top: 10px; border-radius: 14px; background: var(--gray-100); overflow: hidden; }
+.fee { display: flex; align-items: center; gap: 8px; padding: 12px 14px; }
+.fee + .fee { border-top: 1px solid #e6e6e6; }
+.fee .k { flex: 1 1 auto; color: #4a5142; font-size: 13px; font-weight: 500; line-height: 20px; }
+.fee .v { flex: none; color: var(--gray-500); font-size: 14px; font-weight: 900; line-height: 20px; }
+.fee.total { flex-wrap: wrap; padding: 15px 14px; border-top: 1px solid #e6e6e6; background: var(--green-500); }
+.fee.total .k { color: #fff; font-size: 14px; font-weight: 900; }
+.fee.total .v { color: #fff; font-size: 18px; line-height: 24px; }
+
+.included { flex: 0 0 100%; margin-top: 8px; padding: 20px; border-radius: 14px; background: #f2fce0; }
+.inc-t { margin: 0; color: var(--green-500); font-size: 18px; font-weight: 800; letter-spacing: -.36px; line-height: 26px; }
+.inc-list { margin: 15px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 11px; }
+.inc-list li { position: relative; padding-left: 14px; color: #000; font-size: 13px; font-weight: 500; line-height: 19px; }
+.inc-list li::before { content: ""; position: absolute; left: 0; top: 6.5px; width: 6px; height: 6px; border-radius: 50%; background: var(--green-500); }
+.perk { margin-left: 4px; padding: 3px 8px; border-radius: 999px; background: var(--green-500); color: #fff; font-size: 10px; font-weight: 900; line-height: 14px; white-space: nowrap; }
+
+/* 플랜 두 장 — 먹색이 매일 플랜, 회색이 회수권. 색이 곧 「기본」과 「그 외」다 */
+.plans { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+.plan { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 195px; }
+.plan-box { display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 15px 14px; border-radius: 14px; background: var(--ink); }
+.plan.alt .plan-box { background: #696969; }
+.p-price { display: flex; align-items: center; gap: 3px; margin: 0; color: var(--lime); font-size: 25px; font-weight: 900; line-height: 28px; white-space: nowrap; }
+.plan.alt .p-price { color: #fff; }
+.p-price em { font-size: 14px; font-style: normal; font-weight: 500; line-height: 15px; }
+.p-pill { align-self: flex-start; padding: 4px 9px; border-radius: 999px; background: var(--lime); color: #1c1c1c; font-size: 10.5px; font-weight: 700; line-height: 15px; }
+.plan.alt .p-pill { background: #fff; color: #696969; }
+.p-note { margin: 0; color: #fff; font-size: 12px; font-weight: 700; line-height: 20px; }
+.plan-name { color: #1c1c1c; font-size: 14px; font-weight: 700; letter-spacing: -.28px; line-height: 20px; }
+
+/* 어떤 사람이 어느 플랜을 고르는지 — 가격만으로는 못 고른다 */
+.personas { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; padding: 15px 14px; border-radius: 14px; background: var(--gray-100); }
+.pers-t { margin: 0; color: #333; font-size: 18px; font-weight: 900; line-height: 20px; }
+.pers { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px 15px; border-radius: 14px; background: #fff; }
+.pers-tag { padding: 4px 10px; border-radius: 999px; background: var(--ink); color: var(--lime); font-size: 11.5px; font-weight: 900; line-height: 17px; }
+.pers.alt .pers-tag { background: #696969; color: #fff; }
+.pers ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.pers li { position: relative; padding-left: 12px; color: #333; font-size: 11.5px; font-weight: 700; line-height: 18px; }
+.pers li::before { content: "·"; position: absolute; left: 2px; font-weight: 900; }
+
+/* 초월 특전 — 이 장에서 유일하게 초록을 통째로 칠한 상자다 */
+.pr-offer { margin-top: 20px; padding: 20px; border: 1px solid var(--green-500); border-radius: 24px; background: var(--green-500); }
+.pr-offer > .cu-t { margin: 0; color: #fff; font-size: 20px; font-weight: 800; letter-spacing: -.4px; line-height: 1.5; }
+.pr-offer > .cu-s { margin: 0; color: #fff; font-size: 13.733px; font-weight: 400; letter-spacing: -.6867px; line-height: 1.55; }
+.pr-offer-box { margin-top: 10px; padding: 11px 20px; border: 1px solid var(--green-500); border-radius: 14px; background: #fff; }
+.o-row { display: flex; align-items: center; gap: 10px; margin: 0; color: var(--green-500); white-space: nowrap; }
+.o-row + .o-row { margin-top: 10px; }
+.o-row s { font-size: 12px; font-weight: 600; letter-spacing: -.5px; line-height: 20.3px; }
+.o-row i { font-size: 13px; font-style: normal; font-weight: 900; line-height: 18.85px; }
+.o-row b { flex: 1 1 auto; display: flex; align-items: center; justify-content: flex-end; gap: 3px; font-size: 25px; font-weight: 900; line-height: 28px; }
+.o-row b em { font-size: 14px; font-style: normal; font-weight: 600; line-height: 15px; }
+.o-row.sub { color: var(--gray-500); }
+.o-row.sub span { font-size: 12px; font-weight: 600; letter-spacing: -.5px; line-height: 20.3px; }
+.o-row.sub b { gap: 0; font-size: 12px; line-height: 28px; }
+.o-row.sub b em { font-size: 12px; font-weight: 600; line-height: 28px; }
+.pr-offer-fine { margin: 10px 0 0; padding-left: 18px; color: #fff; font-size: 12px; font-weight: 400; letter-spacing: -.6px; line-height: 1.55; }
+
+/* ---------- 플랜 변경 ----------
+   두 줄짜리 표 하나가 「지금」과 「바꾸면」을 나란히 놓는다. 초록 줄이
+   바꾼 쪽이고, 아래 점 목록이 그 줄에 붙는 조건이다. */
+.ocard > .cu-t em { color: var(--green-500); font-style: normal; }
+.sw-table { margin-top: 10px; border-radius: 14px; overflow: hidden; }
+.sw-row { display: flex; align-items: center; gap: 8px; padding: 12px 14px; background: var(--gray-100); }
+.sw-row.on { background: #e8f6d4; }
+.sw-row .k { color: #4a5142; font-size: 13px; font-weight: 500; line-height: 20px; }
+.sw-row .tag { padding: 3px 8px; border-radius: 999px; background: var(--green-500); color: #fff; font-size: 10px; font-weight: 900; letter-spacing: -.4px; line-height: 14px; white-space: nowrap; }
+.sw-row .v { margin-left: auto; display: flex; align-items: center; gap: 8px; color: #1c1c1c; font-size: 18px; font-weight: 900; line-height: 20px; white-space: nowrap; }
+.sw-row .v em { color: var(--gray-500); font-size: 14px; font-style: normal; font-weight: 500; }
+
+.sw-notes { margin: 10px 0 0; padding: 0 0 0 4px; list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.sw-notes li { position: relative; padding-left: 15px; }
+.sw-notes li::before { content: ""; position: absolute; left: 0; top: 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--green-500); }
+.sw-notes b { display: block; color: #000; font-size: 13px; font-weight: 700; line-height: 19px; }
+.sw-notes span { display: block; color: #4a5142; font-size: 12px; font-weight: 500; line-height: 18px; }
+
+/* 지금 → 바꾼 뒤. 화살표 하나가 두 상자를 잇는다 */
+.sw-swap { display: flex; align-items: stretch; gap: 5px; margin-top: 10px; }
+.sw-box { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 57px; padding: 11px 6px; border: 1px solid #e6e6e6; border-radius: 12px; background: #fff; text-align: center; }
+.sw-box.on { border-color: var(--green-500); background: #e8f6d4; }
+.sw-box .k { color: var(--gray-500); font-size: 10px; font-weight: 500; line-height: 14px; }
+.sw-box .v { color: #1c1c1c; font-size: 12.5px; font-weight: 900; line-height: 18px; }
+.sw-arrow { flex: none; align-self: center; width: 0; height: 0; border: 7px solid transparent; border-left: 11px solid var(--ink); border-right: 0; }
+
+/* ---------- 자주 묻는 질문 ----------
+   묶음 제목이 색을 하나씩 가지고, 그 색이 각 질문의 Q 에 그대로 붙는다 */
+.qgroup { margin-top: 20px; }
+.qgroup + .qgroup { margin-top: 40px; }
+.faq-div { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+.faq-div span { color: var(--green-500); font-size: 15px; font-weight: 900; line-height: 19px; }
+.faq-div i { flex: 1 1 auto; height: 1px; background: #e6e6e6; }
+.qgroup.pay .faq-div span { color: #008dff; }
+.faq-card { padding: 20px; border-radius: 24px; background: #fff; filter: drop-shadow(0 0 5px rgba(0,0,0,.25)); }
+.faq-card + .faq-card { margin-top: 15px; }
+.faq-card .q { display: flex; gap: 5px; margin: 0; color: #000; font-size: 16px; font-weight: 800; letter-spacing: -.32px; line-height: 1.5; }
+.faq-card .q i { flex: none; color: var(--green-500); font-size: 20px; font-style: normal; letter-spacing: -.4px; }
+.qgroup.pay .faq-card .q i { color: #008dff; }
+.faq-card .a { margin: 0; color: #4a5142; font-size: 13.733px; font-weight: 400; letter-spacing: -.6867px; line-height: 1.55; }
+
+.limebar.last { margin-top: 30px; }
+.limebar small { font-size: 14px; font-weight: 700; }
+
+/* 환불·변경 안내 — 읽어 두면 좋지만 결정에는 안 쓰이는 줄이라 회색이다.
+   왼쪽 위만 각진 건 앞 상자에서 이어져 내려온다는 표시다. */
+.greycard { margin-top: 20px; padding: 20px; border-radius: 0 24px 24px 24px; background: var(--gray-100); }
+.g-t { margin: 0; color: var(--gray-500); font-size: 18px; font-weight: 900; line-height: 20.3px; }
+.g-s { margin: 5px 0 0; color: var(--gray-500); font-size: 14px; font-weight: 500; line-height: 24px; }
+
+/* 안내 장의 상자 안 큰 제목 — 커리큘럼 단계 카드와 같은 활자다 */
+.ocard > .cu-t { margin: 0; color: #000; font-size: 20px; font-weight: 800; letter-spacing: -.4px; line-height: 1.5; }
+.ocard > .cu-s { margin: 0; color: #4a5142; font-size: 13.733px; font-weight: 400; letter-spacing: -.6867px; line-height: 1.55; }
+
 
 /* ---------- 수강료 ----------
    빨강은 이 덱에서 여기에만 쓴다: 기한이 있는 것 하나. */
@@ -6296,9 +6500,6 @@ body.teaching .lvcheck {
 .swcall b { color: var(--ink); font-weight: 900; }
 
 /* ---------- FAQ · 주제로 한 번 나눈다 ---------- */
-.faq-div { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
-.faq-div span { color: var(--green-500); font-size: 11.5px; font-weight: 900; letter-spacing: -.022em; }
-.faq-div i { flex: none; width: 100px; height: 1px; background: #cdea97; }
 .qa2 { margin-top: 9px; padding: 12px 14px; border: 1.5px solid #cdea97; border-radius: 14px; }
 .qa2.hi { border-color: var(--ink); background: #f5fde9; }
 .qa2 .q { display: block; font-size: 13.5px; font-weight: 900; letter-spacing: -.03em; line-height: 1.48; word-break: keep-all; }
@@ -6319,7 +6520,7 @@ body.teaching .lvcheck {
 
 /* 전체 요금표 — 밀고 있는 한 칸만 라임이고, 나머지 한국어 열은 옅게 */
 .ptable td.hi.rec { background: var(--lime); }
-.ptable td.hi.rec::after { content: "추천"; margin-left: 5px; font-size: 10.5px; font-weight: 900; }
+.ptable td.hi.rec::after { content: "おすすめ"; margin-left: 5px; font-size: 10.5px; font-weight: 900; }
 
 /* .section:has(> .ptable) 규칙은 「표 한 장이 페이지의 전부」 인 화면을 위해
    표 위로 빈 칸을 몰아 준다(.ptable 에 margin-top:auto). 이 장은 표 뒤에
@@ -6331,6 +6532,132 @@ body.teaching .lvcheck {
    없게 된다 — 어느 장을 보든 그 밑에 요금표가 따라붙는다. */
 .phone.paged > #p-price-all.pg-on { display: block; }
 #p-price-all > .ptable { margin-top: 22px; }
+
+/* ============================================================
+   커리큘럼 · Figma「🔥 최종본 🔥」> 36 · 커리큘럼 (워싱 v2)
+   다섯 단계를 레일 하나와 카드 다섯 장으로 편다. 카드마다 실물 한 조각이
+   들어가고(글자 · 패턴 · 말투 · 코스 · 토픽), 파란 줄이 "그래서 뭐가
+   되는지" 로 카드를 닫는다. 파랑은 이 장에서 결과를 말하는 색이다 —
+   튜터 스크립트의 blue-100 과는 다른 색이고, 여기 말고는 쓰지 않는다.
+   ============================================================ */
+.cu-rail { position: relative; height: 68px; margin-top: 16px; display: flex; justify-content: space-between; }
+/* 레일 선 두 줄 — 회색이 전체 길이, 초록이 지금까지 온 만큼 */
+.cu-rail::before,
+.cu-rail::after { content: ""; position: absolute; top: 15px; height: 1.5px; }
+.cu-rail::before { left: 9px; right: 0; background: var(--gray-200); }
+.cu-rail::after { left: 9px; width: 72px; background: var(--green-500); }
+/* 레일 위를 걷는 포도 — 1단계와 2단계 사이가 자리다 */
+.cu-rail-podo { position: absolute; left: 65px; top: -3px; width: 35px; height: 37px; z-index: 1; }
+
+.cu-rl { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 65px; }
+.cu-rl-pill {
+  display: grid; place-items: center; width: 100%; height: 30px;
+  border: 1.5px solid var(--green-500); border-radius: 24px; background: #fff;
+  color: var(--green-500); font-size: 15px; font-weight: 900; line-height: 17.25px;
+}
+.cu-rl-pill.wide { font-size: 13px; }
+.cu-rl.on .cu-rl-pill { border-color: #fff; background: var(--green-500); color: #fff; }
+.cu-rl-lb { color: var(--green-500); font-size: 12px; font-weight: 900; text-align: center; }
+
+.cu-steps { display: flex; flex-direction: column; gap: 30px; margin-top: 16px; }
+/* 그림자는 테두리 대신이다 — 다섯 장이 이어질 때 윤곽선보다 덜 시끄럽다 */
+.cu-card { padding: 20px; border-radius: 24px; background: #fff; filter: drop-shadow(0 0 5px rgba(0,0,0,.25)); }
+.cu-head { position: relative; height: 25px; }
+.cu-no {
+  position: absolute; left: 0; top: 0; display: grid; place-items: center;
+  width: 25px; height: 25px; border-radius: 999px; background: #008dff;
+  color: #fff; font-size: 14.286px; font-weight: 900; line-height: 1;
+}
+.cu-count {
+  position: absolute; right: 0; top: 0; padding: 5px 11px; border-radius: 999px;
+  background: var(--gray-100); color: #4a5142; font-size: 10px; font-weight: 700; line-height: 15px;
+}
+.cu-t { margin: 10px 0 0; color: #000; font-size: 20px; font-weight: 800; letter-spacing: -.4px; line-height: 1.5; }
+.cu-s { margin: 0; color: #4a5142; font-size: 13.733px; font-weight: 400; letter-spacing: -.6867px; line-height: 1.55; }
+
+.cu-demo { margin-top: 11px; }
+.cu-demo-h {
+  padding: 10px 14px; border-radius: 12px 12px 0 0; background: #565656;
+  color: #fff; font-size: 12.5px; font-weight: 900; letter-spacing: -.25px; line-height: 18px; text-align: center;
+}
+.cu-demo-b { padding: 16px 13px 15px; border: 1px solid #565656; border-top: 0; border-radius: 0 0 12px 12px; background: var(--gray-100); }
+.cu-demo-cap { margin: 11px 0 0; color: var(--gray-500); font-size: 11.5px; font-weight: 700; line-height: 16.675px; text-align: center; }
+.cu-demo-sub { margin: 0; color: #1c1c1c; font-size: 14px; font-weight: 900; line-height: 30px; text-align: center; }
+
+/* 카드를 닫는 파란 줄 — 「그래서 이렇게 됩니다」 */
+.cu-arrow {
+  display: flex; gap: 5px; margin: 11px 0 0; padding: 10px 20px; border-radius: 14px;
+  background: #c2e4ff; color: #1c1c1c; font-size: 14px; font-weight: 600; line-height: 20.3px;
+}
+.cu-arrow::before { content: "→"; flex: none; color: #008dff; font-size: 13px; font-weight: 900; line-height: 18.85px; }
+
+/* ① 글자 석 장 — 왼쪽은 일본어 소리, 오른쪽 둘이 그 소리가 갈라지는 자리다 */
+.cu-letters { display: flex; gap: 8px; align-items: stretch; }
+.cu-lt.dark {
+  flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  padding: 10px 12px; border-radius: 12px; background: var(--ink); white-space: nowrap;
+}
+.cu-lt.dark b { display: block; padding: 0; background: none; color: #fff; font-size: 24px; font-weight: 900; line-height: 32px; }
+.cu-lt.dark small { padding: 0; background: none; color: #9aa39a; font-size: 9px; font-weight: 500; line-height: 13px; }
+.cu-lt:not(.dark) { flex: 1 1 0; min-width: 0; border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--ink); overflow: hidden; }
+.cu-lt b { display: block; padding: 10px 0; color: #1c1c1c; font-size: 28px; font-weight: 900; line-height: 38px; text-align: center; }
+.cu-lt b.c { background: var(--c-bg); }
+.cu-lt b.v { background: var(--v-bg); }
+.cu-lt small { display: block; padding: 8px 6px; background: #fff; color: var(--gray-500); font-size: 10.5px; font-weight: 700; line-height: 15px; text-align: center; }
+
+/* ② 패턴 석 장 — 가운데가 갈아 끼우는 자리라 점선이다 */
+/* 줄 높이는 고정이다 — 빈 칸이 내용 없이 서 있어서, 자동으로 두면
+   브라우저가 그 칸에 여분의 줄자리를 잡아 준다 */
+.cu-pat { display: flex; gap: 8px; align-items: center; height: 56px; }
+.cu-pt {
+  flex: 1 1 0; min-width: 0; box-sizing: border-box; height: 56px;
+  display: grid; place-items: center; padding: 14px 6px;
+  border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--ink);
+  color: #1c1c1c; font-size: 19px; font-weight: 900; line-height: 28px;
+}
+/* 점선은 그림자로 그릴 수 없어 진짜 테두리를 쓴다 — height 가 border-box 라 값은 그대로다 */
+/* 빈 칸은 내용이 없다 — grid 로 두면 자동 최소 크기가 줄 높이를 밀어 올린다 */
+.cu-pt.blank { display: block; min-height: 0; border: 1.5px dashed var(--ink); background: var(--lime); box-shadow: none; }
+
+.cu-pt.dark { background: var(--ink); box-shadow: none; color: #fff; }
+
+/* ③ 같은 말, 말투 셋. 라임은 이 장에서 새로 배우는 반말 한 줄에만 */
+.cu-tones { display: flex; flex-direction: column; gap: 4px; }
+.cu-tone { display: flex; align-items: center; gap: 9px; height: 48.8px; padding: 9px 12px 9px 10px; border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 1px var(--ink); }
+.cu-tg { flex: none; padding: 4px 9px; border-radius: 999px; background: var(--gray-100); color: var(--gray-500); font-size: 10px; font-weight: 900; line-height: 14px; }
+.cu-tg.lime { background: var(--lime); color: #1c1c1c; }
+.cu-ts { flex: 1 1 auto; min-width: 0; color: #1c1c1c; font-size: 14px; font-weight: 900; line-height: 20px; }
+.cu-tw { flex: none; color: var(--gray-500); font-size: 10px; font-weight: 500; line-height: 14px; white-space: nowrap; }
+
+/* ④ 코스 넉 줄 — 줄마다 제 색을 가지고, 예문은 그 색을 반만 먹는다 */
+.cu-courses { display: flex; flex-direction: column; gap: 8px; }
+.cu-course { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 1px var(--ink); }
+.cu-course-h { display: flex; align-items: center; gap: 9px; }
+.cu-cico { flex: none; display: grid; place-items: center; padding: 5px 7px; border-radius: 9px; box-shadow: inset 0 0 0 1.2px var(--ink); }
+.cu-cico img { display: block; width: 30px; height: 30px; object-fit: contain; }
+.cu-cnm { flex: 1 1 auto; min-width: 0; color: #1c1c1c; font-size: 15px; font-weight: 900; letter-spacing: -.3px; line-height: 21px; }
+.cu-cct { flex: none; color: var(--gray-500); font-size: 10.5px; font-weight: 700; line-height: 15px; white-space: nowrap; }
+.cu-cex { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; }
+.cu-ck { flex: 1 1 auto; min-width: 0; color: #1c1c1c; font-size: 13px; font-weight: 700; line-height: 19px; }
+.cu-cg { flex: none; color: var(--gray-500); font-size: 9.5px; font-weight: 500; line-height: 14px; white-space: nowrap; }
+.cu-course.drama  .cu-cico { background: #ffd7e5; } .cu-course.drama  .cu-cex { background: rgba(255,215,229,.5); }
+.cu-course.kpop   .cu-cico { background: #cfe3ff; } .cu-course.kpop   .cu-cex { background: rgba(207,227,255,.5); }
+.cu-course.travel .cu-cico { background: #ffeeb8; } .cu-course.travel .cu-cex { background: rgba(255,238,184,.5); }
+.cu-course.talk   .cu-cico { background: #d9f2c4; } .cu-course.talk   .cu-cex { background: rgba(217,242,196,.5); }
+
+/* ⑤ 토픽 여섯 칸 — 사진 위에 검은 물이 아래로 깔리고 글자는 그 위에 선다 */
+.cu-topics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 3px; row-gap: 4px; }
+.cu-tp { position: relative; height: 92px; border-radius: 9.156px; overflow: hidden; display: grid; place-items: center; }
+.cu-tp:nth-child(n+4) { height: 91px; }
+.cu-tp img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cu-tp::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.7) 100%); }
+.cu-tp span {
+  position: relative; z-index: 1; color: #fff; font-size: 13.733px; font-weight: 700;
+  line-height: 16.48px; text-align: center; text-shadow: 0 1.831px 3.662px rgba(0,0,0,.35);
+}
+.cu-tp.more { background: var(--lime); }
+.cu-tp.more::after { content: none; }
+.cu-tp.more span { color: #1c1c1c; text-shadow: none; }
 
 /* ---------- 커리큘럼 · v2 에서 늘어난 조각 ----------
    2단계가 2-1(패턴) · 2-2(말투)로 갈라져서, 동그란 번호로는 담기지 않는다 */
@@ -6358,10 +6685,24 @@ body.teaching .lvcheck {
 .qcard { font-size: 13px; line-height: 1.5; }
 
 /* 엔딩 · 앱에서 리포트를 여는 안내가 마지막 상자다 */
-.end-report { margin-top: 20px; padding: 14px 15px; border: 1.5px solid #cdea97; border-radius: 14px; background: #f5fde9; text-align: center; }
-.end-report .badge-dark { font-size: 9.5px; }
-.end-report .t { display: block; margin-top: 7px; font-size: 16px; font-weight: 900; letter-spacing: -.037em; }
-.end-report .s { display: block; margin-top: 7px; color: #4a5142; font-size: 11.5px; font-weight: 500; line-height: 1.65; }
+.end-report { margin-top: 20px; padding: 18px 16px; border: 1px solid var(--green-500); border-radius: 16px; background: #f2fce4; text-align: center; }
+.end-report .badge-dark { padding: 5px 12px; font-size: 11px; font-weight: 900; line-height: 16px; }
+.end-report .t { display: block; margin-top: 8px; color: #1c1c1c; font-size: 16px; font-weight: 900; letter-spacing: 0; line-height: 24px; }
+.end-report .s { display: block; margin-top: 8px; color: #4a5142; font-size: 12px; font-weight: 500; letter-spacing: -.12px; line-height: 19px; }
+
+/* 아치로 휜 인사 한 줄 — 프레임 맨 위에서 마스코트를 감싼다.
+   글자가 그림 위에, 그림은 카드 아래에 깔린다. */
+.brand-page.end.bleed { justify-content: flex-start; padding: 0; }
+.end-arch { position: absolute; left: 0; top: 0; width: 480px; height: 300px; z-index: 2; pointer-events: none; }
+.end-arch text { fill: #1c1c1c; font-family: inherit; font-size: 27px; font-weight: 900; }
+.end-art { position: absolute; left: 139px; top: 182px; width: 201px; height: 252px; z-index: 1; }
+.brand-page.end.bleed > .end-card { position: absolute; left: 20px; top: 306px; z-index: 3; width: 440px; margin: 0; padding: 20px; border: 0; border-radius: 20px; }
+/* 「체험레슨」 한 조각만 초록 — 오늘 끝난 것이 무엇인지 이름을 든다 */
+.end-title .hl { color: var(--green-500); }
+.brand-page.end.bleed .end-title { margin: 38px 0 0; font-size: 24px; line-height: 34px; letter-spacing: -.48px; }
+.brand-page.end.bleed .end-copy { margin: 10px 0 0; color: #4a5142; font-size: 13px; font-weight: 500; line-height: 20px; }
+.brand-page.end.bleed .end-copy strong { font-weight: 800; }
+.brand-page.end.bleed .end-bar { padding-bottom: 16px; margin-bottom: 22px; border-bottom: 1px solid #e6e6e6; font-size: 13px; font-weight: 900; }
 
 
 /* ============================================================
