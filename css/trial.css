@@ -166,8 +166,14 @@
 .brand-art { position: absolute; left: 30px; bottom: -123px; width: 420px; height: auto; }
 .brand-art.mid { left: 50%; bottom: -97px; width: 409px; transform: translateX(-50%); }
 /* 안내 표지의 마스코트만 프레임 안에 온전히 선다 — 흘러넘치는 두 장과 달리
-   버튼 격자 바로 아래가 자리이고, Figma 프레임(915)에서 아래끝 70px 이다. */
-.brand-art.menu { left: 120px; bottom: 70px; width: 225px; height: 252px; }
+   버튼 격자 바로 아래가 자리다.
+
+   화면 아래끝이 아니라 **가운데에 맞춰 세운다.** 이 장은 세로로 가운데 정렬된
+   글 뭉치(제목 10 부제 10 버튼격자 = 339.25px) 하나뿐이고, 페이지 높이는 기기가
+   정한다. 아래끝에 매어 두면 화면이 짧을수록 마스코트가 버튼 쪽으로 밀려 올라와
+   맨 아랫줄을 덮었다. 50% + 135.5px 는 Figma 프레임(915)의 top:593 과 같은 값이면서
+   높이가 달라져도 글 뭉치와의 거리를 그대로 지킨다. */
+.brand-art.menu { left: 120px; top: calc(50% + 135.5px); bottom: auto; width: 225px; height: 252px; }
 
 /* closing page */
 .end-head {
