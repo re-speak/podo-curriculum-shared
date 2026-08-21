@@ -193,6 +193,7 @@
   function cut(fb) {
     var q = fb.getAttribute("data-fb");
     if (!q) return;                      // 칸을 직접 적어 둔 덱은 그대로 둔다
+    var spokenLabel = fb.getAttribute("data-fb-spoken-label") || copy.spoken;
     var task = fb.querySelector(":scope > .fb-task");
     var hint = fb.querySelector(":scope > .hint");
     var html = "";
@@ -201,7 +202,7 @@
         '<div class="fb-block">' +
           '<button class="fb-del" type="button" aria-label="' + copy.remove + '">✕</button>' +
           '<div class="fb-row orig">' +
-            '<span class="fb-cap">' + copy.spoken + '</span>' +
+            '<span class="fb-cap">' + esc(spokenLabel) + '</span>' +
             '<p class="fb-diff"></p>' +
             '<textarea class="fb-in said" data-sync-id="' + q + '-said-' + i +
               '" rows="1" spellcheck="false"></textarea>' +

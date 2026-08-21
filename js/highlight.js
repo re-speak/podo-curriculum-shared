@@ -14,6 +14,8 @@
        s·e 는 그 블록 안에서 몇 번째 글자부터 몇 번째 글자까지인가.
        좌표도 아니고 DOM 경로도 아니라서, 두 사람의 창 크기가 달라도,
        스크롤 위치가 달라도 같은 글자를 가리킨다.
+       한 번의 드래그가 여러 블록을 지나면 각 주소에 같은 선택 묶음 g 를
+       덧붙인다. 어느 조각을 눌러도 그때 그은 자국 전체가 함께 지워진다.
      · data-hl 은 로드 때 덱 전체에 문서 순서대로 매긴다. 두 사람이 같은
        문서를 받으니 "n 번째 텍스트 블록" 이 양쪽에서 같은 요소다.
 
@@ -68,6 +70,27 @@
      글의 일부로 그대로 안고 가므로, 글자 세는 자리도 하나로 남는다. */
   var INLINE = ".s-key";
 
+  /* flex 컨테이너의 맨바깥 텍스트는 익명 flex item 이다. 그 일부를 <mark> 로
+     바꾸면 표시 전/후가 서로 다른 item 으로 갈라져, 튜터 노트가 두 칼럼처럼
+     찢어진다. 노트 원문을 처음부터 한 item 으로 고정해 두면 그 안에서 mark 를
+     몇 번 나눠도 줄 흐름은 바뀌지 않는다. 이미 구조를 가진 자유 대화 노트는
+     직접 텍스트가 없으므로 건드리지 않는다. */
+  (function stabilizeTutorNotes() {
+    var notes = phone.querySelectorAll(".tutor-note");
+    for (var i = 0; i < notes.length; i++) {
+      var children = [].slice.call(notes[i].childNodes);
+      for (var j = 0; j < children.length; j++) {
+        var node = children[j];
+        if (node.nodeType !== 3 || !node.nodeValue.trim()) continue;
+        var flow = document.createElement("span");
+        flow.className = "hl-flow";
+        flow.style.minWidth = "0";
+        notes[i].replaceChild(flow, node);
+        flow.appendChild(node);
+      }
+    }
+  })();
+
   /* ---- 글이 든 블록에 번호 매기기 ----
      "자기 텍스트를 직접 가진 요소" 가 한 블록이다. 자식이 또 글을 가지고
      있으면 그 자식이 자기 블록을 따로 가지므로, 글은 겹치지 않게 나뉜다. */
@@ -103,10 +126,6 @@
     return out;
   }
 
-  function lengthOf(anchor) {
-    return textsOf(anchor).reduce(function (t, n) { return t + n.nodeValue.length; }, 0);
-  }
-
   // 이 블록 안에서 (노드, 오프셋) 이 몇 번째 글자인가. 못 찾으면 -1.
   function offsetIn(anchor, node, off) {
     var nodes = textsOf(anchor), at = 0;
@@ -117,7 +136,64 @@
     return -1;
   }
 
-  var ranges = [];   // [{ a, s, e }] — 공유되는 상태 전부
+  /* 브라우저 selection 하나를 실제로 걸친 모든 글 블록의 구간으로 바꾼다.
+
+     한 문장은 시각적으로 이어져도 DOM 에서는 다음처럼 여러 anchor 로 갈린다:
+       I <b>can help with</b> + 手伝えること
+     예전 코드는 시작 anchor 하나만 읽어서 <b> 를 건너뛰거나, .ending 안에서
+     시작한 자국을 그 span 끝에서 잘랐다. 공유 상태는 원래 ranges 배열이므로
+     프로토콜을 바꿀 필요 없이, selection 이 실제로 지난 각 anchor 조각을 같은
+     한 번의 갱신에 넣으면 된다. 부모 anchor 의 글 노드는 자식 anchor 를 빼고
+     세므로 조각끼리 겹치지 않는다. */
+  function selectedParts(range) {
+    var out = [];
+    var anchors = phone.querySelectorAll("[data-hl]");
+
+    for (var i = 0; i < anchors.length; i++) {
+      var anchor = anchors[i], nodes = textsOf(anchor), at = 0;
+      var start = -1, end = -1;
+
+      for (var j = 0; j < nodes.length; j++) {
+        var node = nodes[j], len = node.nodeValue.length;
+        var hit = range.intersectsNode ? range.intersectsNode(node) : false;
+        if (hit) {
+          var s = range.startContainer === node ? range.startOffset : 0;
+          var e = range.endContainer === node ? range.endOffset : len;
+          if (e > s) {
+            if (start < 0) start = at + s;
+            end = at + e;
+          }
+        }
+        at += len;
+      }
+
+      if (start >= 0 && end > start) {
+        out.push({
+          a: parseInt(anchor.getAttribute("data-hl"), 10),
+          s: start,
+          e: end
+        });
+      }
+    }
+    return out;
+  }
+
+  var ranges = [];   // [{ a, s, e, g? }] — g 는 한 번에 그은 조각들의 묶음
+  var nextGroup = 1;
+
+  function groupSet(value) {
+    var out = {};
+    if (typeof value !== "string") return out;
+    value.split(" ").forEach(function (group) {
+      if (/^[1-9][0-9]*$/.test(group)) out[group] = true;
+    });
+    return out;
+  }
+
+  function groupValue(groups) {
+    var list = Object.keys(groups).sort(function (x, y) { return x - y; });
+    return list.join(" ");
+  }
 
   // ---- 그리기 ----
   function unpaint() {
@@ -143,6 +219,7 @@
       mid.splitText(b - a);
       var m = document.createElement("mark");
       m.className = "hl";
+      if (r.g) m.setAttribute("data-hl-groups", r.g);
       mid.parentNode.replaceChild(m, mid);
       m.appendChild(mid);
     }
@@ -154,14 +231,19 @@
   }
 
   // 겹치는 자국은 하나로 합친다 — <mark> 이 겹쳐 쌓이지 않게.
-  function add(a, s, e) {
-    var keep = [];
+  function add(a, s, e, group) {
+    var keep = [], groups = groupSet(group);
     ranges.forEach(function (r) {
       if (r.a !== a || r.e < s || r.s > e) { keep.push(r); return; }
       s = Math.min(s, r.s);
       e = Math.max(e, r.e);
+      var old = groupSet(r.g);
+      Object.keys(old).forEach(function (name) { groups[name] = true; });
     });
-    keep.push({ a: a, s: s, e: e });
+    var merged = { a: a, s: s, e: e };
+    var value = groupValue(groups);
+    if (value) merged.g = value;
+    keep.push(merged);
     ranges = keep;
     sort();
   }
@@ -180,7 +262,17 @@
       ranges = list.filter(function (r) {
         return r && typeof r.a === "number" && typeof r.s === "number" &&
                typeof r.e === "number" && r.e > r.s;
-      }).map(function (r) { return { a: r.a, s: r.s, e: r.e }; });
+      }).map(function (r) {
+        var clean = { a: r.a, s: r.s, e: r.e };
+        var value = groupValue(groupSet(r.g));
+        if (value) {
+          clean.g = value;
+          value.split(" ").forEach(function (group) {
+            nextGroup = Math.max(nextGroup, parseInt(group, 10) + 1);
+          });
+        }
+        return clean;
+      });
       sort();
       redraw();
     }
@@ -203,17 +295,10 @@
     if (!start || !start.closest) return;
     if (offLimits(start)) return;                        // 위젯 안은 긋지 않는다
 
-    var anchor = start.closest("[data-hl]");
-    if (!anchor || !phone.contains(anchor)) return;
-
-    var s = offsetIn(anchor, r.startContainer, r.startOffset);
-    if (s < 0) return;
-    // 끝이 다른 블록으로 넘어갔으면 이 블록 끝까지만 긋는다
-    var e = offsetIn(anchor, r.endContainer, r.endOffset);
-    if (e < 0) e = lengthOf(anchor);
-    if (e <= s) return;
-
-    add(parseInt(anchor.getAttribute("data-hl"), 10), s, e);
+    var parts = selectedParts(r);
+    if (!parts.length) return;
+    var group = String(nextGroup++);
+    parts.forEach(function (part) { add(part.a, part.s, part.e, group); });
     redraw();
     sync.push(carrier);
     // 파란 선택 막은 지우지 않는다 — 뒤따라오는 click 을 스포트라이트가
@@ -231,8 +316,12 @@
       var anchor = mark.closest("[data-hl]");
       var a = parseInt(anchor.getAttribute("data-hl"), 10);
       var at = offsetIn(anchor, mark.firstChild, 0);
+      var clickedGroups = groupSet(mark.getAttribute("data-hl-groups"));
+      var hasGroup = Object.keys(clickedGroups).length > 0;
       ranges = ranges.filter(function (r) {
-        return !(r.a === a && at >= r.s && at < r.e);
+        if (!hasGroup) return !(r.a === a && at >= r.s && at < r.e);
+        var groups = groupSet(r.g);
+        return !Object.keys(clickedGroups).some(function (name) { return groups[name]; });
       });
       redraw();
       sync.push(carrier);

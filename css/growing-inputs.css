@@ -1,0 +1,65 @@
+/* Keep complete learner answers and long choices visible at phone widths. */
+textarea.space-input,
+textarea.free-input,
+textarea.phrase-input {
+  box-sizing: border-box;
+  field-sizing: content;
+  block-size: auto;
+  min-block-size: 2.75em;
+  max-block-size: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  resize: none;
+}
+
+textarea.phrase-input {
+  margin-block: 4px;
+}
+
+.sent-hero,
+.korean {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.slot-hints {
+  display: grid;
+  gap: 7px;
+  margin-top: 8px;
+  min-width: 0;
+}
+
+.slot-hint-group {
+  min-width: 0;
+}
+
+.slot-hint-label {
+  display: block;
+  color: var(--gray-700);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 3px;
+  overflow-wrap: anywhere;
+}
+
+.slot-hint-label .task {
+  display: block;
+  color: var(--gray-600);
+  font-weight: 500;
+}
+
+.word-choice-sentence,
+.choose-row.word-choice,
+.choose-row.word-choice .opt {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.choose-row.word-choice {
+  display: inline-flex;
+  flex-wrap: wrap;
+}

@@ -682,27 +682,18 @@ html:has(meta[name="podo:target-language"][content="en"])
   line-height: 2.35;
 }
 
-/* A dialogue blank is sized to its answer like every other blank, so a long
-   one wraps below its lead-in rather than being given the line outright. What
-   it needs there is room: at the normal 1.45 the 34px pill clears the text
-   above it by 3px and reads as stuck to it. Row spacing is line-height's job —
-   a margin on the pill would work on the wrapped rows and shove the rows where
-   it *does* fit off their own baseline, since the same element is doing both.
-   The phrase field later grew from 34px to 38px, which reduced the actual
-   wrapped gap to 3px at English lesson widths. 2.7 restores a visibly separate
-   row without changing the field itself.
-
-   Leading is split above and below the line, so the taller line would also
-   push the first row down off the box's top padding; the padding here gives
-   back exactly that half-leading. Net effect on a row that doesn't wrap is
-   nothing but a 4px tightening at the top — which is the point: the first row
-   now sits 19px below the border whether it wrapped or not, where the pill's
-   height used to make the two disagree.
-
-   Phrase inputs are still scoped to .dialogue because their 38px height needs
-   slightly more leading than the 34px controlled-fill slots above. */
+/* Keep dialogue completions readable as one sentence. The old 2.7 line-height
+   created space between wrapped rows by stretching every row, including rows
+   containing ordinary words. A long phrase blank then turned one sentence
+   into three widely separated bands. Normal sentence leading plus a small
+   margin on the editable phrase preserves separation exactly where it is
+   needed without pulling the surrounding words apart. */
 .dialogue .answer-fill .korean {
-  line-height: 2.7;
+  line-height: 1.6;
+}
+
+.dialogue .answer-fill .phrase-input {
+  margin: 4px;
 }
 
 .dialogue .answer-fill {

@@ -156,11 +156,16 @@
     "button,a,input,textarea,select,label,[contenteditable]," +
     "[data-sync-option],[data-ok],[data-item-id],.build-slot";
 
-  /* 눌러도 포인터를 옮기지 않는 컨트롤. 튜터 메모는 튜터만 보는 것이라
-     상대 화면에는 옮겨 줄 "여기" 가 없다 — 메모를 쓰는 동안 학생 화면에서
-     엉뚱한 블록이 켜지면 안 된다. (이 칸은 tutor-notes.js 가 이 파일보다
-     늦게 만들어 넣으므로 data-spot 도 없다.) */
-  var NOPOINT = ".note-input";
+  /* 눌러도 포인터를 옮기지 않는 자리. 튜터 메모는 튜터만 보는 것이라 상대
+     화면에는 옮겨 줄 "여기" 가 없다. data-no-spot 은 선택 자체가 이미 충분히
+     선명해 빨간 링이 상태 표시와 다투는 컨트롤이 좁게 opt out 하는 주소다.
+
+     대화 방식 선택기는 이 속성이 생기기 전에 이미 배포된 덱이 많다. 그 덱도
+     새 runtime 을 받는 즉시 같은 동작을 하도록 기존의 page/component 조합을
+     함께 알아본다. 일반 .opt-list 는 계속 짚을 수 있다. */
+  var NOPOINT =
+    ".note-input,[data-no-spot]," +
+    '[data-page-id="lesson-style"] .opt-list.picks';
 
   /* 컨트롤을 눌러야만 닿는 바깥 상자.
      손으로 짚을 때는 체인에서 건너뛴다. 이 상자들은 안에 이미 짚을 자리를
@@ -342,6 +347,10 @@
     var t = e.target;
     if (!t || !t.closest) return;
 
+    /* opt out 은 컨트롤뿐 아니라 그 둘레의 빈 여백까지 포함한다. 버튼만 여기서
+       돌려보내면 카드 사이를 누를 때 같은 큰 링이 다시 생긴다. */
+    if (t.closest(NOPOINT)) return;
+
     /* ---- 컨트롤을 눌렀다 ----
        고르는 알약, 집어 옮기는 조각, 키패드, 타일. 누르는 동작은 그대로
        흘려보내고(막지 않는다), 그것이 속한 활동 상자를 통째로 켠다.
@@ -357,7 +366,7 @@
        칸(FIELD)은 예외다: click 보다 focusin 이 먼저 와서 이미 켜 두었는데,
        여기서 한 번 더 손대면 그 링이 한 번도 보이지 못하고 꺼진다. */
     if (t.closest(WIDGET) && !t.closest(POINTS)) {
-      if (t.closest(FIELD) || t.closest(NOPOINT)) return;
+      if (t.closest(FIELD)) return;
       var box = controlBox(t);
       if (!box) return;                     // 짚을 상자가 없는 컨트롤은 그냥 둔다
       var boxSpot = spotOf(box);
