@@ -15,6 +15,23 @@
   // 로드맵의 칸은 클로저에 있어 DOM 만으로는 읽을 수 없다 — register 로 넘긴다
   var sync = window.lessonSync;
 
+  /* ---------- 로케일 ----------
+     이 파일은 그리는 일만 하고, 「무엇을 그리는가」 는 표가 정한다. 표를 통째로
+     바꿔 끼울 수 있게 한 창구가 window.PODO_REPORT_LOCALE 하나다 — 덱이 report.js
+     보다 **먼저** 로케일 파일(예: report-en.js)을 부르면 그 표가 쓰이고, 아무도
+     넣지 않으면 아래 한국어 표가 그대로 쓰인다.
+
+     그래서 이 훅은 더하기만 한다. 전역을 안 놓는 덱에서는 예전과 바이트 단위로
+     같은 값이 나오므로, 이미 배포된 한국어 체험은 이 변경으로 아무것도 달라지지
+     않는다. **렌더러를 포크하지 마라** — 구현이 둘이 되는 순간 한쪽만 고쳐진다.
+
+     영어 표의 근거: sandbox/drafts/en/trial/plan-logic.md
+     한국어 표의 근거: sandbox/drafts/kr/trial/plan-logic.md */
+  var L = window.PODO_REPORT_LOCALE || {};
+  /* 문안 한 조각. 기본값은 호출하는 자리에 그대로 적어 두어, 로케일이 없을 때
+     무엇이 나오는지를 코드에서 바로 읽을 수 있게 한다. */
+  function tx(k, d) { var v = L.text && L.text[k]; return v === undefined ? d : v; }
+
   /* ---------- 10단계 레벨 ----------
      사내 레벨표(CEFR·JLPT 대응)를 한국어 학습으로 옮긴 것이다. 눈금 10칸이
      곧 레벨 1~10 이고, 튜터가 고른 이 값이 리포트 전체의 기준점이 된다.
@@ -22,7 +39,7 @@
      한 레벨에 그림 한 장(assets/levels/lv-N.png) — 열 장이 한 줄로 이어지는
      성장 그림이라, 번호가 아니라 그림만 봐도 어디쯤인지 읽힌다. */
   var LADDER_STEPS = 10;
-  var LV = {
+  var LV = L.LV || {
     "1":  { name: "첫걸음",
             line: '한글을 <b>하나씩 읽어요</b>',
             diag: '간단한 인사와 자기소개는 <b>따라 말할 수 있어요.</b> 아직 글자를 붙여 읽는 게 느리고, 문장은 한 번에 하나씩 나와요. 지금은 소리와 글자를 손에 익히는 단계예요.',
@@ -70,7 +87,7 @@
      문장은 그대로 두고 대상 언어만 한국어로 옮겼다. 한 칸이 두 레벨을
      덮으므로 색인은 ceil(lv / 2) 다.
      HINT 는 같은 표의 "OO을 보완하려면?" 문단을 한 줄로 줄인 것. */
-  var AREAS = [
+  var AREAS = L.AREAS || [
     { k: "acc",  n: "정확성" },
     { k: "voc",  n: "어휘" },
     { k: "flu",  n: "유창성" },
@@ -93,7 +110,7 @@
   /* 코멘트에 들어갈 「무엇을 하면 느는가」. HINT 와 따로 두는 이유는 꼴이
      달라서다 — HINT 는 목록에 놓이는 「…하기」 이고, 이쪽은 문장 가운데에
      들어가 「…것이 중요해요」 로 닫힌다. */
-  var GROW = {
+  var GROW = L.GROW || {
     acc: "단어와 문법의 뜻·쓰임을 정확히 알고, 맞는 상황에서 직접 써 보는 것",
     voc: "많이 읽어 단어를 알고, 그 단어를 대화에서 실제로 써 보는 것",
     flu: "여러 사람과 자주 주고받으며 말하는 양을 늘리는 것",
@@ -108,7 +125,23 @@
   }
   function josa(word, withT, withoutT) { return word + (hasBatchim(word) ? withT : withoutT); }
 
-  var HINT = {
+  /* 항목 코멘트의 한국어 판본. 문장을 짓는 규칙이 언어마다 달라서 — 한국어는
+     앞말의 받침을 따라 조사가 갈리고, 영어에는 그런 것이 없는 대신 두 이름을
+     and 로 잇는다 — 문장 조립을 통째로 로케일이 가져갈 수 있게 떼어 둔다. */
+  function koComment(good2, weak2, grow) {
+    var nm = function (xs) {
+      return xs.map(function (a, i) {
+        var b = "<b>" + a.n + "</b>";
+        return i < xs.length - 1 ? b + (hasBatchim(a.n) ? "과 " : "와 ") : b;
+      }).join("");
+    };
+    var lastOf = function (xs) { return xs[xs.length - 1].n; };
+    return "포도님은 " + nm(good2) + (hasBatchim(lastOf(good2)) ? "이" : "가") + " 좋은 편이에요.<br>" +
+           nm(weak2) + (hasBatchim(lastOf(weak2)) ? "을" : "를") + " 키우려면 " +
+           grow + "이 중요해요.";
+  }
+
+  var HINT = L.HINT || {
     flu: "다양한 상황에서 소통하는 경험을 늘리기 — 사람과 한국어로 주고받은 양이 그대로 유창성이 돼요.",
     acc: "단어와 문법의 정확한 뜻·쓰임을 이해하고, 맞는 상황에서 직접 써 보며 충분히 연습하기.",
     pron: "정확한 발음·억양·리듬을 쓰는 원어민의 한국어를 많이 듣고, 그대로 따라 하며 내 것으로 만들기.",
@@ -129,14 +162,14 @@
      ㅓ/ㅗ·ㅜ/ㅡ가 붙고, 평음·경음·격음 3항 대립이 없으며, 받침이 없다.
      TODO(데이터): 실제 코호트 수치가 나오면 숫자만 갈아끼운다 —
      레이더와 막대가 함께 따라간다. */
-  var AVG = { voc: 4.4, acc: 3.8, lis: 3.4, flu: 2.9, pron: 2.3 };
+  var AVG = L.AVG || { voc: 4.4, acc: 3.8, lis: 3.4, flu: 2.9, pron: 2.3 };
 
   /* ---------- 목표 ----------
      학습 동기 하나가 사다리 하나고, 그 사다리의 세 칸이 여기 세 줄이다.
      lv 는 그 목표가 도착하는 레벨이고, 걸리는 레슨 수는 따로 두지 않고
      DONE[lv] 에서 읽는다 — 같은 레벨인데 어느 줄을 눌렀느냐로 기간이
      달라지면 튜터가 설명할 수 없다. */
-  var GOALS = {
+  var GOALS = L.GOALS || {
     t3: { lv: 3, t: "짧은 문장으로 전하기" },
     t5: { lv: 5, t: "익숙한 주제로 대화 이어가기" },
     t7: { lv: 7, t: "의견도 이유도 말하기" },
@@ -144,11 +177,11 @@
   };
   // 이유 -> 그 이유를 실제로 채워 주는 상황별 코스. 목표 카드는 거리만
   // 정하고, 길에 무엇을 깔지는 이유가 정한다.
-  var WHY_COURSE = { travel: "travel", kpop: "drama", friend: "banmal",
+  var WHY_COURSE = L.WHY_COURSE || { travel: "travel", kpop: "drama", friend: "banmal",
                      self: "travel", work: "free", topik: "free" };
   /* 마지막 마디에서 계획을 처음 고른 이유로 되묶는 한 줄. 로드맵의 끝은 코스가
      끝나는 자리가 아니라 「이걸 하려고 배웠지」 로 돌아오는 자리다. */
-  var WHY = {
+  var WHY = L.WHY || {
     kpop:   "K-POP·드라마를 자막 없이 즐기는 데까지, 이 순서가 가장 빨라요.",
     travel: "여행 전에 맞추려고 읽는 힘과 가게에서 쓰는 표현을 먼저 넣었어요.",
     friend: "한국인 친구·연인과 이야기하려면 반말까지가 사정권이에요.",
@@ -158,7 +191,7 @@
     other:  "오늘 들은 희망에 맞춰 순서를 짰어요."
   };
   // the tutor's level call -> lessons already effectively covered.
-  var DONE = { "1": 0, "2": 11, "3": 25, "4": 45, "5": 70,
+  var DONE = L.DONE || { "1": 0, "2": 11, "3": 25, "4": 45, "5": 70,
                "6": 90, "7": 110, "8": 130, "9": 150, "10": 170 };
 
   /* 이름과 순서는 뒤의 「커리큘럼」 장과 같다 — 리포트가 추천한 코스를
@@ -181,7 +214,7 @@
      n = 그 코스의 레슨 수(tracks/ 의 목차 그대로). 핵심 패턴만 n 이 없다 —
      통째로 떼고 넘어가는 코스가 아니라서, 다음 코스의 입장 바닥까지만 세고
      나머지 과는 그 뒤로도 계속 함께 간다. courseLen() 이 그때그때 잰다. */
-  var COURSE = {
+  var COURSE = L.COURSE || {
     hangul: { n: 14, t: "한글 읽기", ico: "hangul",
               can: "거리 간판과 메뉴판을 소리 내어 읽어요",
               art: { kind: "han",
@@ -219,12 +252,22 @@
                              ["me", "저는 시간이요. [돈은 다시 벌 수 있으니까요]."]],
                      cap: "생각 하나에 이유 하나 — 문장을 이어서 말해요" } }
   };
-  var CORE_N = 116;                    // 핵심 패턴 전체 과 수
+  var CORE_N = L.CORE_N || 116;                    // 핵심 패턴 전체 과 수
   /* 상황별 커리큘럼의 입장 바닥 — 핵심 몇 과까지 하면 들어갈 수 있는가.
      tracks/3-contextual-korean 의 표 그대로다. 문(gate)이 아니라 권고라서,
      그 위의 문법은 「덩어리」로 통째로 익히고 넘어간다.
      프리토킹은 트랙이 「이미 초중급 패턴을 쥔 학습자」를 전제하므로 초중급 끝(65). */
-  var ENTRY = { drama: 71, travel: 57, banmal: 45, free: 65 };
+  var ENTRY = L.ENTRY || { drama: 71, travel: 57, banmal: 45, free: 65 };
+
+  /* 언제나 후보에 오르는 코스와, 그 코스가 「이미 지나간 것」 이 되는 레벨.
+     한국어는 둘이다 — 한글(Lv2 위로는 추천하지 않는다)과 핵심 패턴(Lv5 위).
+     영어는 읽을 글자를 따로 떼지 않으므로 핵심 패턴 하나뿐이고, 그 문턱은
+     Lv8 이다(영어의 Lv8 이 곧 Core 완주다). */
+  var BASE = L.BASE || [["hangul", 2], ["core", 5]];
+  /* 핵심 패턴 앞에 놓인 분량. DONE 은 누적이라 「핵심을 몇 과 뗀 셈인가」 는
+     여기를 빼야 나온다. 한국어는 한글 14과, 영어는 앞에 아무것도 없어 0 이다. */
+  var PRE_CORE = L.PRE_CORE !== undefined ? L.PRE_CORE
+               : (COURSE.hangul ? COURSE.hangul.n : 0);
 
   var pick = { why: [], goal: null, pace: null, level: null };
 
@@ -280,7 +323,7 @@
   /* ---- 날짜 ----
      리포트 머리글의 날짜와 수강료 쿠폰의 마감일은 같은 "오늘" 에서 나온다.
      상담은 오늘 하는 것이라, 문서에 날짜를 적어 두면 반드시 어긋난다. */
-  var DOW = ["일", "월", "화", "수", "목", "금", "토"];
+  var DOW = tx("dow", ["일", "월", "화", "수", "목", "금", "토"]);
   function stampDates() {
     var d = new Date(), el = document.querySelector(".rm-date");
     if (el) {
@@ -380,7 +423,7 @@
     card.querySelector(".lvbig-l").innerHTML = d.line;
     card.querySelector(".lvbig-img").src = srcOf(".lv-src", "lv", n);
     card.querySelector(".lvbig-img").alt = "Lv." + n + " · " + d.name;
-    card.querySelector(".topikrow i").textContent = "TOPIK " + d.cert[0];
+    card.querySelector(".topikrow i").textContent = tx("certPrefix", "TOPIK ") + d.cert[0];
     card.querySelector(".topikrow span").textContent = d.cert[1];
 
     /* 근거는 실제로 체크한 항목에서만 나온다 — 가장 잘 되는 둘. 아직 하나도
@@ -448,18 +491,8 @@
        아쉬운 둘을 기르는 방법을 붙인다. 방법은 가장 처지는 항목의 HINT 다 —
        둘 다 적으면 문단이 길어지고, 튜터가 읽어 줄 말이 아니게 된다. */
     var good2 = order.slice(0, 2), weak2 = order.slice(-2);
-    // 이름을 이을 때도 문장을 닫을 때도 앞말의 받침을 따라간다
-    var nm = function (xs) {
-      return xs.map(function (a, i) {
-        var b = "<b>" + a.n + "</b>";
-        return i < xs.length - 1 ? b + (hasBatchim(a.n) ? "과 " : "와 ") : b;
-      }).join("");
-    };
-    var lastOf = function (xs) { return xs[xs.length - 1].n; };
     document.querySelector(".axtip p").innerHTML =
-      "포도님은 " + nm(good2) + (hasBatchim(lastOf(good2)) ? "이" : "가") + " 좋은 편이에요.<br>" +
-      nm(weak2) + (hasBatchim(lastOf(weak2)) ? "을" : "를") + " 키우려면 " +
-      GROW[order[order.length - 1].k] + "이 중요해요.";
+      (L.comment || koComment)(good2, weak2, GROW[order[order.length - 1].k]);
   }
 
   /* 오각형. 지금(초록 채움)은 튜터가 고른 항목별 레벨, 점선 외곽은 체험
@@ -573,10 +606,9 @@
       extras = extras.filter(function (k) { return k !== mainC; }).concat(mainC);
     }
     // never recommend a course the learner has already passed
-    var all = ["hangul", "core"].concat(extras);
+    var all = BASE.map(function (b) { return b[0]; }).concat(extras);
     var out = all.filter(function (k) {
-      if (k === "hangul") return lv < 2;
-      if (k === "core") return lv < 5;
+      for (var i = 0; i < BASE.length; i++) if (BASE[i][0] === k) return lv < BASE[i][1];
       return true;
     });
     return out.length ? out : [all[all.length - 1]];
@@ -622,7 +654,7 @@
       if (rjCourse) {
         rjCourse.classList.remove("hide");
         rjCourse.href = "#p-goal";
-        rjCourse.querySelector(".rj-t").textContent = "목표를 아직 안 골랐어요";
+        rjCourse.querySelector(".rj-t").textContent = tx("goalUnpicked", "목표를 아직 안 골랐어요");
       }
       return;
     }
@@ -632,7 +664,7 @@
     var per = perWeek(), need = planNeed();
     if (freq) freq.value = per;
     rcourse.querySelector(".freq-n").textContent = per;
-    document.querySelector(".eta").textContent = months(need, per) + "개월";
+    document.querySelector(".eta").textContent = months(need, per) + tx("monthUnit", "개월");
     /* 레슨 수는 페이스와 무관하다 — 주 1회든 7회든 배울 분량은 같고 걸리는
        기간만 달라진다. 슬라이더를 끌 때 이 칸이 안 움직이는 것이 정상이다. */
     document.querySelector(".need").textContent = need;
@@ -673,7 +705,7 @@
   }
   // 지금 레벨이면 핵심 패턴을 몇 과까지 뗀 셈인가 (누적 레슨에서 한글을 뺀다)
   function coreDone() {
-    return Math.max(0, Math.min(CORE_N, (DONE[String(overall())] || 0) - COURSE.hangul.n));
+    return Math.max(0, Math.min(CORE_N, (DONE[String(overall())] || 0) - PRE_CORE));
   }
   /* 코스가 로드맵에서 차지하는 길이. 핵심 패턴만 계산해서 낸다 — 116과를
      통째로 떼고 나서야 다음으로 넘어가는 코스가 아니기 때문이다. 필요한 만큼만
@@ -684,7 +716,7 @@
     if (COURSE[key].n) return COURSE[key].n;
     var next = stops[i + 1], g = GOALS[pick.goal];
     var upto = next ? (ENTRY[next] || CORE_N)
-                    : Math.min(CORE_N, Math.max(0, (DONE[String(g ? g.lv : overall() + 2)] || 0) - COURSE.hangul.n));
+                    : Math.min(CORE_N, Math.max(0, (DONE[String(g ? g.lv : overall() + 2)] || 0) - PRE_CORE));
     return Math.max(6, upto - coreDone());
   }
 
@@ -883,7 +915,7 @@
       var t = roadEls.caps[d];
       seen[d] = true;
       t.setAttribute("class", "rd-cap " + (i === 0 ? "start" : last ? "dest" : "wp"));
-      if (i === 0) { t.textContent = "지금"; return; }
+      if (i === 0) { t.textContent = tx("now", "지금"); return; }
       if (last) { t.textContent = end + suf; return; }
       var v = Math.max(1, Math.round(unit * stopTrue[i]));
       var show = v > prev && v < end;
@@ -1070,7 +1102,7 @@
       var face = (!me && pic) ? '<img class="avatar" src="' + pic + '" alt="">' : ICON;
       return '<div class="turn ' + (me ? "me" : "other") + '">' +
           '<span class="who">' + face +
-            '<span class="who-name">' + (me ? "나" : (a.who || "상대")) + '</span></span>' +
+            '<span class="who-name">' + (me ? tx("me", "나") : (a.who || tx("other", "상대"))) + '</span></span>' +
           '<div class="bubble' + (me ? " me" : "") + '">' +
             '<span class="korean">' + hlText(t[1]) + '</span></div>' +
         '</div>';
@@ -1090,7 +1122,7 @@
     var total = months(need, per);
     /* 눈금은 언제나 개월이다. 마디보다 짧은 계획은 「주」로 세는 갈래가 있었는데,
        기간의 바닥이 5개월이고 마디는 많아야 넷이라 닿을 수 없는 길이 됐다. */
-    var unit = total, suf = "개월";
+    var unit = total, suf = tx("monthUnit", "개월");
     // 마디 자리를 알아야 시각을 매기는데, 자리는 길을 세운 뒤라야 나온다
     if (!roadEls) drawRoad(unit, suf, false);
 
@@ -1102,7 +1134,7 @@
          달라져서, COURSE.n 을 그대로 쓰면 이 사람의 계획과 어긋난다. */
       curli.innerHTML =
         '<div class="hy">' +
-          headHTML(c.t, courseLen(key, stops, k) + "레슨", k, doMark(c.ico), c.can, false) +
+          headHTML(c.t, courseLen(key, stops, k) + tx("lessonUnit", "레슨"), k, doMark(c.ico), c.can, false) +
           '<div class="hy-stage">' + artHTML(c.art) + '</div>' +
           '<div class="hy-cap">' + c.art.cap + '</div>' +
         '</div>';
@@ -1127,16 +1159,16 @@
          바로 위 점프 링크가 이미 「목표를 아직 안 골랐어요」 라고 말하므로
          여기서 같은 문장을 반복하지 않는다. */
       var why = g ? (WHY[pick.why[0]] || WHY.other)
-                  : "지금은 오늘 실력으로 가 볼 만한 곳을 미리 놓아 뒀어요.";
+                  : tx("preGoalWhy", "지금은 오늘 실력으로 가 볼 만한 곳을 미리 놓아 뒀어요.");
       /* 머리의 그림은 처음 고른 「이유」 의 것이다. 길의 마지막 칸이 맨 첫 장의
          대답으로 닫히는 자리라, 표식도 그 첫 장에서 가져온다. */
       curli.innerHTML =
         '<div class="hy hy-goal">' +
-          headHTML("목표 도착",
-                   g ? "완주" : "",
+          headHTML(tx("goalArrive", "목표 도착"),
+                   g ? tx("goalDone", "완주") : "",
                    k,
                    g ? doMark("goal") : '<i>?</i>',
-                   g ? g.t : "목표를 고르면 여기가 채워져요",
+                   g ? g.t : tx("goalEmpty", "목표를 고르면 여기가 채워져요"),
                    !g) +
           /* 도착은 앞의 세 장과 다른 꼴로 선다 — 코스 카드가 「무엇을 하는가」 를
              보여 준다면 이 장은 「그래서 어디에 닿는가」 라, 도착한 자리를 연둣빛
@@ -1229,7 +1261,7 @@
     var areas = {};
     AREAS.forEach(function (a) { areas[a.k] = rated(a.k) ? areaLv(a.k) : null; });
     return {
-      kind: "podo-korean-trial-report",
+      kind: L.snapshotKind || "podo-korean-trial-report",
       schemaVersion: 1,
       capturedAt: new Date().toISOString(),
       /* 어느 판으로 그린 것인가. 문안과 계산이 이 판에 매여 있다. */
@@ -1262,7 +1294,17 @@
   /* 리포트 밖에서 쓸 수 있는 것은 이 셋뿐이다. 레벨표·기간 계산·코스 목록은
      클로저에 그대로 둔다 — 밖에서 만질 수 있게 열어 두면 계획의 근거가 두 곳이
      된다. 앱이 리포트를 다시 그릴 때 쓰는 것도 이 파일이어야 한다. */
-  window.podoReport = { snapshot: snapshot, missing: missing, levelName: levelName };
+  /* 저장 버튼(report-submit.js)이 읽는 창구. 표를 갈아 끼우면 보내는 값도
+     함께 갈려야 하므로, 로케일이 정하는 두 값을 여기 실어 보낸다 — 없으면
+     한국어 기본값이라, 전역을 안 놓는 덱은 예전과 같은 값을 보낸다.
+     language 는 le_level_test.language 로 그대로 간다(백엔드는 KO 만 KR 로
+     고치고 나머지는 통과시킨다). source 는 앱의 BFF 가 걷어내므로 실제
+     검증에는 쓰이지 않지만, 어느 제품이 보낸 것인지를 봉투에 남겨 둔다. */
+  window.podoReport = {
+    snapshot: snapshot, missing: missing, levelName: levelName,
+    language: L.language || "KO",
+    source: L.submitSource || "korean-trial-report"
+  };
 
   stampDates();
   render();

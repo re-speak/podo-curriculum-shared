@@ -30,6 +30,14 @@
   var box = document.querySelector(".rep-send");
   if (!box || !window.podoReport) return;
 
+  /* 문안은 report.js 와 같은 창구에서 온다. 이 칸은 **튜터만** 보는 자리라,
+     읽는 사람의 언어가 곧 튜터의 언어다 — 한국어 체험의 튜터는 리포트를
+     학습자와 같이 읽어 주므로 일본어로 읽고(report-ja.js), 영어 체험의 튜터는
+     영어로 읽는다(report-en.js). 전역이 없으면 한국어 기본값 그대로이고,
+     그 자리는 사내 확인용 한국어 리포트뿐이다. */
+  var L = window.PODO_REPORT_LOCALE || {};
+  function tx(k, d) { var v = L.submitText && L.submitText[k]; return v === undefined ? d : v; }
+
   var btn = box.querySelector(".rs-btn");
   var msg = box.querySelector(".rs-msg");
 
@@ -45,7 +53,7 @@
 
   /* 아직 안 고른 것을 튜터가 읽을 이름으로. missing() 은 코드를 돌려주므로
      여기서 옮긴다 — report.js 가 화면 문안까지 들고 있을 이유는 없다. */
-  var LABEL = {
+  var LABEL = L.missingLabel || {
     level: "종합 레벨", why: "학습 동기", goal: "목표",
     "ax-acc": "정확성", "ax-voc": "어휘", "ax-flu": "유창성",
     "ax-pron": "발음", "ax-lis": "듣기"
@@ -88,10 +96,13 @@
     var lv = snap.assessment.areas;
     var str = function (v) { return v == null ? null : String(v); };
     return {
-      source: "korean-trial-report",
+      source: window.podoReport.source || "korean-trial-report",
       reportVersion: 2,
       levelTest: {
-        language: "KO",
+        /* 배우는 언어. 표를 갈아 끼운 덱(영어 체험)은 report.js 를 통해
+           자기 값을 실어 보낸다 — 여기서 한국어로 굳히면 영어 리포트가
+           한국어 리포트로 저장된다. */
+        language: window.podoReport.language || "KO",
         level: snap.assessment.level,
         // 레벨 이름은 레벨에서 나오는 값이지만 표가 report.js 안에 있어 백엔드가
         // 스스로 채울 수 없다. 어드민 목록이 읽는 칸이라 비워 두지 않는다.
@@ -121,11 +132,11 @@
     var left = window.podoReport.missing();
     btn.disabled = left.length > 0;
     if (left.length) {
-      say("todo", "아직 안 고른 항목이 있어요 — " +
+      say("todo", tx("todo", "아직 안 고른 항목이 있어요 — ") +
         left.map(function (k) { return LABEL[k] || k; }).join(" · "));
       return;
     }
-    say("ready", "이 화면 그대로 저장해요. 저장한 뒤에 고쳐서 다시 보내도 돼요.");
+    say("ready", tx("ready", "이 화면 그대로 저장해요. 저장한 뒤에 고쳐서 다시 보내도 돼요."));
   }
 
   function newRequestId() {
@@ -140,7 +151,7 @@
     pending = null;
     sending = false;
     btn.disabled = false;
-    if (ok) btn.textContent = "다시 보내기";
+    if (ok) btn.textContent = tx("again", "다시 보내기");
     say(ok ? "done" : "error", text);
   }
 
@@ -151,13 +162,13 @@
     if (window.parent === window || !origin) {
       /* 덱만 따로 열어 본 경우다. 튜터가 고친 내용은 화면에 남아 있으니
          잃는 것은 없고, 수업방에서 다시 누르면 된다. */
-      say("error", "저장은 수업방 안에서만 돼요.");
+      say("error", tx("roomOnly", "저장은 수업방 안에서만 돼요."));
       return;
     }
 
     sending = true;
     btn.disabled = true;
-    say("sending", "보내는 중…");
+    say("sending", tx("sending", "보내는 중…"));
 
     pending = newRequestId();
     window.parent.postMessage({
@@ -168,7 +179,7 @@
     }, origin);
 
     timer = setTimeout(function () {
-      settle(false, "저장 결과를 받지 못했어요 — 다시 눌러 주세요.");
+      settle(false, tx("noReply", "저장 결과를 받지 못했어요 — 다시 눌러 주세요."));
     }, REPLY_TIMEOUT_MS);
   }
 
@@ -181,10 +192,10 @@
     if (e.origin !== parentOrigin()) return;
 
     if (data.ok) {
-      settle(true, "저장했어요.");
+      settle(true, tx("saved", "저장했어요."));
       return;
     }
-    settle(false, "보내지 못했어요 (" + (data.error || "오류") + ") — 다시 눌러 주세요.");
+    settle(false, tx("failed", "보내지 못했어요 (") + (data.error || tx("errorWord", "오류")) + tx("retry", ") — 다시 눌러 주세요."));
   });
 
   btn.addEventListener("click", send);

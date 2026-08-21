@@ -4447,7 +4447,6 @@ button.opt-row:active { transform: scale(.99); }
    keep-all a JP sentence can only break at 。 — it then runs
    the full width and rams the card edge. Every Japanese-bearing
    element opts back out to normal breaking.
-   (The plan and sales pages are Korean, so they keep keep-all.)
    ============================================================ */
 .title-ja,
 .section-subtitle .ja,
@@ -4470,6 +4469,33 @@ button.opt-row:active { transform: scale(.99); }
 .end-copy,
 .hint-chip,
 .brand-page:not(#p-info) .brand-sub {
+  word-break: normal;
+  line-break: normal;
+}
+
+/* ---- the report page follows its own declared language ----
+   The list above names Japanese-bearing elements one by one, which works
+   because everywhere else in the deck the two languages sit in separate
+   elements — Korean in .korean, its Japanese in .translation. The report is
+   the exception: it is written in ONE language with no gloss, and which
+   language that is varies by deck. So the deck declares it, and this rule
+   turns the whole page over in one move.
+
+   It has to be turned over, because under keep-all a Japanese sentence has no
+   break opportunity at all — it runs the full width and rams the card edge.
+   Measured at 360px: the evidence list under the level card overflowed its own
+   <ul> by 3px, because 「場面に合う多様な語と表現を自由に使えます」 is one
+   unbreakable token.
+
+   Both trials report in Japanese, for the same reason — the learner reading
+   the report is a Japanese speaker either way. The only page still reporting
+   in Korean is the internal reference
+   (sandbox/drafts/kr/trial/reports/trial-1-report.html); it declares nothing,
+   keeps keep-all, and keep-all is what Korean wants. Keying this on
+   target-language instead would tie the Korean trial to that page and get one
+   of the two wrong. */
+html:has(meta[name="podo:report-language"][content="ja"]) .rep-page,
+html:has(meta[name="podo:report-language"][content="ja"]) .rep-page * {
   word-break: normal;
   line-break: normal;
 }
@@ -6092,6 +6118,18 @@ body.teaching .axsteps {
   background: var(--gray-100); color: var(--gray-500); font-size: 10.5px; font-weight: 800;
 }
 .rung-row.on::after { content: none; }
+/* 이 배지는 튜터만 본다. 그래서 말은 읽는 튜터를 따라간다 — 한국어 체험의 튜터는
+   리포트를 학습자와 같이 읽어 주므로 일본어로 읽고, 영어 체험의 튜터는 영어
+   화자다. 기본값의 「추천」 이 남는 자리는 사내 확인용 한국어 리포트뿐이라,
+   가르는 축은 target-language 가 아니라 report-language 다.
+   영어 규칙을 뒤에 두는 것은 순서로 이기게 하려는 것이다 — 영어 덱은 둘 다
+   달고 있다(리포트는 일본어, 튜터는 영어). */
+html:has(meta[name="podo:report-language"][content="ja"]) .rung-row.sug::after {
+  content: "おすすめ";
+}
+html:has(meta[name="podo:target-language"][content="en"]) .rung-row.sug::after {
+  content: "suggested";
+}
 
 .axq-done { display: none; margin: 14px 0 0; font-size: 12px; font-weight: 700; color: #8a8a85; }
 .axsteps.all .axq-done { display: block; }
