@@ -1246,6 +1246,7 @@ strong {
 
 /* ---------- transitions ---------- */
 .transition-page {
+  position: relative;
   min-height: 440px;
   margin: 24px 20px 0;
   padding: 36px 30px;
@@ -1870,6 +1871,16 @@ body.teaching .note-input:placeholder-shown { background-color: transparent; }
 
 /* the learner gets it as a read-only note, so drop the text cursor */
 .note-input[readonly] { cursor: default; }
+
+/* Full-screen brand and transition pages are composed as one centred surface.
+   Their memo is an overlay owned by trial.css, not another flex child in that
+   composition. Keep content-sizing from turning a short note into a narrow
+   floating strip; the page-specific sheet supplies the safe insets and edge. */
+.note-input--dock {
+  width: auto;
+  min-width: 0;
+  margin: 0;
+}
 
 @media print { .note-input:not(:placeholder-shown) { display: block; } }
 

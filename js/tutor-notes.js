@@ -19,12 +19,14 @@
    원격에서 도착한 메모도 이벤트 하나 없이 그대로 떠오른다. 티칭 모드는
    공유하지 않는 상태라(페이저 참고) 튜터는 빈 칸까지, 학생은 채워진 것만 본다.
 
-   자리: 파란 스크립트 박스(.section-subtitle) 바로 아래 — 튜터가 대사를 읽고
-   다음으로 눈이 가는 곳이고, .tutor-note 가 이미 쓰는 자리다. 그 페이지에
-   .tutor-note 가 있으면 그 아래로 내려간다. 둘 다 없는 표지·전환 페이지에서만
-   맨 뒤에 붙인다 — .section 의 마지막 자식이 되는 일이 없어야 한다.
-   :last-child 로 남는 여백을 미는 규칙(trial.css)이 메모 칸에 걸리면
-   페이지가 화면을 못 채운다.
+   자리에는 세 가지 계약이 있다.
+     · 표지·전환 페이지 → 가운데 판짜기를 밀지 않는 고정 dock
+     · 보통 학습 페이지 → 파란 스크립트와 튜터 노트 바로 아래
+     · 긴 안내·리포트    → 장 제목 바로 아래 (페이지 맨 끝까지 찾으러 가지 않게)
+   드문 별도 판짜기는 직계 자식에 data-note-anchor 를 두면 그 뒤를 쓴다.
+   아무 표지도 없는 페이지만 맨 뒤에 붙인다 — .section 의 마지막 자식이 되는
+   일이 없어야 한다. :last-child 로 남는 여백을 미는 규칙(trial.css)이 메모
+   칸에 걸리면 페이지가 화면을 못 채운다.
 
    한 덱에 <script src> 한 줄이면 붙는다.
    ================================================================ */
@@ -67,11 +69,46 @@
     box.setAttribute("rows", "2");
     box.setAttribute("autocomplete", "off");
 
-    // 파란 스크립트 → (있으면) 튜터 노트 → 메모. 없으면 페이지 끝.
+    /* 표지는 콘텐츠 전체를 가운데 놓는 하나의 판이다. 메모를 그 흐름에 넣으면
+       빈 칸 하나만 켜도 제목과 그림이 움직이므로 CSS dock 으로 뺀다. 전환 장도
+       파란 스크립트가 없는 순수 표지일 때만 같은 규칙을 쓴다 — 목표 예문처럼
+       내용이 긴 전환 장은 메모가 스크립트 곁에 있어야 겹치지 않는다.
+       data-note-anchor 는 새 특수 장을 만들 때 쓰는 명시적 탈출구다. */
+    var explicitAnchor = page.querySelector(":scope > [data-note-anchor]");
+    if (explicitAnchor) {
+      explicitAnchor.insertAdjacentElement("afterend", box);
+      return;
+    }
+
+    if (page.matches(".brand-page")) {
+      box.classList.add("note-input--dock");
+      page.appendChild(box);
+      return;
+    }
+
+    /* 안내와 리포트의 튜터 노트는 읽기를 마친 뒤의 운영 메모라 페이지 맨 아래에
+       놓이는 경우가 많다. 공유 메모까지 그 뒤를 따르면 쓰려는 순간 수천 px 를
+       내려가야 하므로, 이 두 긴 장에서는 제목을 먼저 잡는다. */
+    if (page.matches(".info-page, .report")) {
+      var longPageAnchor = page.querySelector(":scope > .rhead")
+                        || page.querySelector(":scope > .section-title");
+      if (longPageAnchor) {
+        longPageAnchor.insertAdjacentElement("afterend", box);
+        return;
+      }
+    }
+
+    // 파란 스크립트/튜터 노트 → 긴 장의 제목 → 마지막 자식.
     var anchor = page.querySelector(":scope > .tutor-note")
-              || page.querySelector(":scope > .section-subtitle");
-    if (anchor) anchor.insertAdjacentElement("afterend", box);
-    else page.appendChild(box);
+              || page.querySelector(":scope > .section-subtitle")
+              || page.querySelector(":scope > .rhead")
+              || page.querySelector(":scope > .section-title");
+    if (anchor) {
+      anchor.insertAdjacentElement("afterend", box);
+    } else {
+      if (page.matches(".transition-page")) box.classList.add("note-input--dock");
+      page.appendChild(box);
+    }
   });
 
   var boxes = [].slice.call(phone.querySelectorAll(".note-input"));
