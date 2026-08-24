@@ -226,8 +226,8 @@
   letter-spacing: 0;
 }
 .brand-page.bleed .brand-sub { margin: 0; line-height: 23.25px; }
-/* 스크롤형 문서에서는 그림이 페이지 바닥을 넘어가는 원래 표지 구도를 유지한다.
-   한 장씩 보는 모드에서는 아래의 pager-safe 규칙이 캐릭터를 온전히 보여 준다. */
+/* 그림은 Figma 표지처럼 화면 아래로 이어진다. 스크롤형 문서에서는 페이지 끝이,
+   한 장 보기에서는 그 위에 뜬 페이저가 그림의 아래를 잘라 표지의 깊이를 만든다. */
 .brand-art { position: absolute; left: 6.25%; bottom: calc(var(--art-h) * -.3045); width: auto; height: var(--art-h); }
 .brand-art.mid { left: 50%; bottom: calc(var(--art-h) * -.2573); transform: translateX(-50%); }
 /* 안내 표지의 마스코트만 프레임 안에 온전히 선다 — 흘러넘치는 두 장과 달리
@@ -246,37 +246,21 @@
    라임 위에 떠 있는 스티커가 된다. */
 .brand-art.study { left: 50%; top: auto; bottom: 0; transform: translateX(-50%); }
 
-/* Paged lessons let the lime surface continue behind the floating controls, but
-   the mascot is foreground content and must not disappear under them. Scale the
-   two formerly cropped figures to the same visual band as their old visible
-   portion, then rest every mascot just above the complete pager + tutor wing. */
-.phone.paged .brand-page.brand-page:has(> .brand-art) {
-  --art-h: min(286px, 59.6vw);
-  --art-band: var(--art-h);
+/* In paged mode the navigation bar replaces the viewport edge as the cover's
+   crop line. Keep the Figma-visible portion of the two overflowing mascots,
+   but let the rest continue behind the glass bar. The two complete mascots
+   simply meet that same edge. --pager-bar-edge is the fixed 14px inset plus
+   the rendered 72px rail. */
+.phone.paged { --pager-bar-edge: 86px; }
+.phone.paged .brand-page > .brand-art {
+  bottom: calc(var(--pager-bar-edge) - var(--art-h) * .3045);
 }
-.phone.paged .brand-page.brand-page:has(> .brand-art.mid) {
-  --art-h: min(276px, 57.5vw);
-  --art-band: var(--art-h);
+.phone.paged .brand-page > .brand-art.mid {
+  bottom: calc(var(--pager-bar-edge) - var(--art-h) * .2573);
 }
-.phone.paged .brand-page.brand-page:has(> .brand-art.menu) {
-  --art-h: min(252px, 52.5vw);
-  --art-band: var(--art-h);
-}
-.phone.paged .brand-page.brand-page:has(> .brand-art.study) {
-  --art-h: min(252px, 52.5vw);
-  --art-band: var(--art-h);
-}
-.phone.paged .brand-page.brand-page:has(> .brand-art.study)::before {
-  flex-grow: 1.6;
-}
-.phone.paged .brand-page > .brand-art,
-.phone.paged .brand-page > .brand-art.mid,
 .phone.paged .brand-page > .brand-art.menu,
 .phone.paged .brand-page > .brand-art.study {
-  left: 50%;
-  top: auto;
-  bottom: calc(var(--pager-reserve) + 4px);
-  transform: translateX(-50%);
+  bottom: var(--pager-bar-edge);
 }
 
 /* closing page */
