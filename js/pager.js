@@ -55,10 +55,12 @@
   var at = 0;
   var prevBtn  = bar.querySelector(".pg-prev");
   var nextBtn  = bar.querySelector(".pg-next");
+  var mid      = bar.querySelector(".pg-mid");
   var actEl    = bar.querySelector(".pg-act");
   var nEl      = bar.querySelector(".pg-n");
   var teachBtn = bar.querySelector(".pg-teach");
   var scrub    = bar.querySelector(".pg-scrub");
+  var scrubWrap = null;
 
   /* ---- 이 화면이 누구의 것인지가 티칭 모드를 정한다 ----
      학생이라고 명시된 화면에서는 버튼을 아예 지운다 — 학습자가 켜면 답이
@@ -80,6 +82,88 @@
     teachBtn = null;
   }
 
+  /* ---- 페이저의 두 층 ----
+     이동은 한 줄(이전 · 스크럽 · 다음)만 차지한다. 현재 막과 쪽수는 늘
+     자리를 먹지 않고, 스크러버를 잡은 동안에만 손잡이 위에 뜬다.
+
+     티칭 모드는 이동과 다른 일이라 위쪽 날개로 분리한다. 기존 마크업을
+     그대로 받아 여기서 재배치하므로 수백 덱을 다시 생성하지 않아도 되고,
+     정적 validator 가 보는 data-sync 계약도 바뀌지 않는다. */
+  if (scrub) {
+    scrubWrap = document.createElement("div");
+    scrubWrap.className = "pg-scrub-wrap";
+    bar.insertBefore(scrubWrap, scrub);
+    if (mid) scrubWrap.appendChild(mid);
+    scrubWrap.appendChild(scrub);
+  }
+
+  if (teachBtn) {
+    var targetMeta = document.querySelector('meta[name="podo:target-language"]');
+    var targetLanguage = targetMeta ? targetMeta.getAttribute("content") : "ko";
+    var tutorLanguage = String(
+      lessonContext.tutorLanguage
+      || lessonContext.tutorLocale
+      || navigator.language
+      || targetLanguage
+      || "ko"
+    ).trim().toLowerCase().split(/[-_]/)[0];
+    var teachingLabels = {
+      en: "Teaching",
+      ja: "指導モード",
+      ko: "티칭 모드"
+    };
+    var teachingLabel = teachingLabels[tutorLanguage]
+      || (targetLanguage === "en" ? teachingLabels.en : teachingLabels.ko);
+
+    var wing = document.createElement("div");
+    wing.className = "pg-wing";
+    wing.setAttribute("aria-label", teachingLabel);
+
+    var stampSlot = document.createElement("div");
+    stampSlot.className = "pg-stamp-slot";
+    wing.appendChild(stampSlot);
+
+    teachBtn.textContent = "";
+    teachBtn.classList.add("pg-teach-toggle");
+    teachBtn.setAttribute("aria-label", teachingLabel);
+    teachBtn.setAttribute("aria-pressed", "false");
+
+    var label = document.createElement("span");
+    label.className = "pg-teach-label";
+    label.textContent = teachingLabel;
+    teachBtn.appendChild(label);
+
+    var switchTrack = document.createElement("span");
+    switchTrack.className = "pg-switch";
+    switchTrack.setAttribute("aria-hidden", "true");
+    teachBtn.appendChild(switchTrack);
+
+    wing.appendChild(teachBtn);
+    bar.insertBefore(wing, nextBtn);
+  }
+
+  function positionScrubBubble() {
+    if (!scrub || !scrubWrap || !mid) return;
+    var trackWidth = scrub.getBoundingClientRect().width;
+    if (!trackWidth) return;
+
+    var ratio = pages.length <= 1 ? 0 : at / (pages.length - 1);
+    var thumbRadius = 11;
+    var thumbX = thumbRadius + ratio * Math.max(0, trackWidth - thumbRadius * 2);
+    var wrapLeft = scrubWrap.getBoundingClientRect().left;
+    var bubbleWidth = mid.getBoundingClientRect().width;
+    var viewportWidth = document.documentElement.clientWidth;
+    var safeEdge = 8;
+    var desiredCenter = wrapLeft + thumbX;
+    var minCenter = safeEdge + bubbleWidth / 2;
+    var maxCenter = viewportWidth - safeEdge - bubbleWidth / 2;
+    var bubbleCenter = Math.max(minCenter, Math.min(maxCenter, desiredCenter));
+    var tipX = bubbleWidth / 2 + desiredCenter - bubbleCenter;
+
+    scrubWrap.style.setProperty("--pg-bubble-x", (bubbleCenter - wrapLeft) + "px");
+    mid.style.setProperty("--pg-tip-x", tipX + "px");
+  }
+
   function paint() {
     if (prevBtn) prevBtn.disabled = at <= 0;
     if (nextBtn) nextBtn.disabled = at >= pages.length - 1;
@@ -87,7 +171,13 @@
     acts.forEach(function (x, k) { if (at >= x.from) a = k; });
     if (actEl) actEl.textContent = acts[a].name;   // the act only labels where you are
     if (nEl) nEl.textContent = (at + 1) + " / " + pages.length;
-    if (scrub) scrub.value = at;
+    if (scrub) {
+      scrub.value = at;
+      var progress = pages.length <= 1 ? 0 : (at / (pages.length - 1)) * 100;
+      scrub.style.setProperty("--pg-progress", progress + "%");
+      if (scrubWrap) scrubWrap.style.setProperty("--pg-progress", progress + "%");
+      positionScrubBubble();
+    }
   }
 
   // Layout is flushed before scrolling — the page has only just left
@@ -142,6 +232,18 @@
     scrub.max = pages.length - 1;
     scrub.addEventListener("input", function () { show(Number(scrub.value)); });
     scrub.addEventListener("change", function () { sync.push(bar); });
+
+    function endScrub() { if (scrubWrap) scrubWrap.classList.remove("is-dragging"); }
+    scrub.addEventListener("pointerdown", function () {
+      if (scrubWrap) scrubWrap.classList.add("is-dragging");
+    });
+    scrub.addEventListener("pointerup", endScrub);
+    scrub.addEventListener("pointercancel", endScrub);
+    scrub.addEventListener("lostpointercapture", endScrub);
+    scrub.addEventListener("change", endScrub);
+    scrub.addEventListener("blur", endScrub);
+    window.addEventListener("pointerup", endScrub);
+    window.addEventListener("resize", positionScrubBubble);
   }
 
   document.addEventListener("keydown", function (e) {
@@ -175,6 +277,7 @@
   function setTeaching(on) {
     document.body.classList.toggle("teaching", on);
     if (teachBtn) teachBtn.classList.toggle("on", on);
+    if (teachBtn) teachBtn.setAttribute("aria-pressed", String(on));
     if (window.__revealAnswers) window.__revealAnswers(on);
   }
 

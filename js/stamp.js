@@ -77,6 +77,11 @@
   document.body.appendChild(carrier);
 
   // ---- 버튼 ----
+  // 학생 화면에는 티칭 날개가 없다. 공유 carrier 는 그대로 두어 받은 도장은
+  // 보이게 하되, 찍는 버튼만 만들지 않는다.
+  var stampSlot = bar.querySelector(".pg-stamp-slot");
+  if (!stampSlot) return;
+
   // 페이저 안에 만든다. 라벨은 도장 그림을 축소한 것이라, 여기서도 경로를
   // 새로 쓰지 않는다(복제본은 이미 해석된 경로를 그대로 들고 온다).
   var btn = document.createElement("button");
@@ -84,9 +89,9 @@
   btn.className = "pg-btn pg-stamp";
   btn.setAttribute("aria-label", englishDeck ? "Well done stamp" : "참 잘했어요 도장");
   btn.appendChild(art.cloneNode(true));
-  // 티칭 버튼 왼쪽에 둔다 — 오른쪽 끝은 "다음"의 자리다. DOM 순서 자체를
-  // 맞춰서 넣으므로(CSS order 가 아니라), 탭 순서도 보이는 순서와 같다.
-  bar.insertBefore(btn, bar.querySelector(".pg-teach") || bar.querySelector(".pg-next"));
+  // 티칭 토글 왼쪽의 접힌 슬롯에 둔다. 토글을 켜면 슬롯이 열리며 도장이
+  // 나타나고, 이동 줄의 스크러버나 버튼은 한 픽셀도 움직이지 않는다.
+  stampSlot.appendChild(btn);
 
   btn.addEventListener("click", function () {
     // 버튼은 티칭 모드에서만 보이지만, 상태로도 한 번 더 막는다.

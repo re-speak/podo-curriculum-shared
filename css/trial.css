@@ -69,7 +69,7 @@
   height: 164px;
   object-fit: contain;
   padding: 16px;
-  background: #fff;
+  background: var(--white);
   border: 1px solid var(--gray-200);
   border-radius: 26px;
   box-sizing: border-box;
@@ -97,7 +97,7 @@
 }
 
 .podo-badge .tag {
-  background: #fff;
+  background: var(--white);
   border-radius: 999px;
   padding: 7px 15px;
   color: #1c1c1c;
@@ -5015,11 +5015,12 @@ body.paged { padding-bottom: 0; }
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   width: min(calc(100% - 32px), 448px);
-  padding: 8px;
+  min-height: 66px;
+  padding: 9px;
   border: 1px solid var(--gray-200);
-  border-radius: 999px;
+  border-radius: 20px;
   background: #fff;
   /* The one blurred shadow in the system, and the only element that earns it:
      the bar genuinely floats above the page, and a hard offset that reads as
@@ -5032,14 +5033,14 @@ body.paged { padding-bottom: 0; }
   flex: none;
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 56px;
+  height: 48px;
   border: 1px solid var(--gray-200);
-  border-radius: 50%;
+  border-radius: 14px;
   background: #fff;
   color: var(--ink);
   font-family: inherit;
-  font-size: 16px;
+  font-size: 26px;
   font-weight: 800;
   line-height: 1;
   cursor: pointer;
@@ -5047,7 +5048,7 @@ body.paged { padding-bottom: 0; }
 }
 
 .pg-btn:active { transform: translateY(2px); }
-.pg-next { background: var(--lime); border-color: var(--lime); }   /* the only primary action */
+.pg-next { background: var(--ink); border-color: var(--ink); color: var(--white); }
 .pg-btn:disabled { background: var(--gray-100); border-color: var(--gray-200); color: var(--gray-400); cursor: default; }
 .pg-next:disabled { background: var(--gray-100); border-color: var(--gray-200); }
 
@@ -5068,7 +5069,7 @@ body.paged { padding-bottom: 0; }
   line-height: 1.2;
 }
 
-.pg-label .pg-act { font-size: 14.5px; font-weight: 800; }
+.pg-label .pg-act { font-size: 16px; font-weight: 850; }
 .pg-label .pg-n { color: var(--gray-500); }
 
 /* a page opened from the 포도 안내 index is off the Next chain, so say so */
@@ -5079,45 +5080,250 @@ body.paged { padding-bottom: 0; }
   .phone.paged > * { display: block; }   /* printing always gets the whole deck */
 }
 
-/* ---------- the scrubber, on its own row above the buttons ----------
-   A 25-page deck makes "back to the page before last" four taps of an arrow.
-   Lime on the thumb because lime is the pager's colour — the same fill as
-   다음, so it reads as the same object.
+/* ---------- compact scrubber ----------
+   Navigation is one stable row: Back · scrub · Next. The act and page count
+   exist only while the thumb is held, and travel with it instead of claiming
+   permanent height. The title bubble may cover the tutor wing for that brief
+   gesture; the user cannot operate both controls with the same pointer. */
+.pager:has(.pg-scrub-wrap) { overflow: visible; }
+.pager:has(.pg-scrub-wrap) .pg-prev { order: 1; }
+.pager:has(.pg-scrub-wrap) .pg-scrub-wrap { order: 2; }
+.pager:has(.pg-scrub-wrap) .pg-next { order: 3; }
 
-   The row break is made by wrap and nothing else: stamp.js inserts the stamp
-   button before .pg-teach, so wrapping the buttons in a div of their own
-   would delete that slot. The bar takes a squarer radius while it is two
-   rows tall — a stadium shape on a two-row bar bows the corners inward.
-   Without this rule the scrubber's flex-basis:100% has nowhere to go and it
-   squeezes the label into a vertical column of syllables. */
-.pager:has(.pg-scrub) {
-  flex-wrap: wrap;
-  row-gap: 2px;
-  padding: 10px 12px 8px;
-  border-radius: 26px;
+.pg-scrub-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 48px;
 }
 
 .pg-scrub {
-  flex: 1 0 100%; width: 100%; height: 20px; margin: 0;
-  -webkit-appearance: none; appearance: none; background: none;
-  cursor: grab; -webkit-tap-highlight-color: transparent;
+  width: 100%;
+  height: 48px;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 0;
+  background: none;
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .pg-scrub:active { cursor: grabbing; }
-.pg-scrub::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: var(--gray-200); }
-.pg-scrub::-moz-range-track { height: 6px; border-radius: 999px; background: var(--gray-200); }
+.pg-scrub::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(to right,
+    var(--lime) 0 var(--pg-progress, 0%),
+    var(--gray-200) var(--pg-progress, 0%) 100%);
+}
+.pg-scrub::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(to right,
+    var(--lime) 0 var(--pg-progress, 0%),
+    var(--gray-200) var(--pg-progress, 0%) 100%);
+}
 .pg-scrub::-webkit-slider-thumb {
-  -webkit-appearance: none; appearance: none; margin-top: -7px;
-  width: 20px; height: 20px; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--lime);
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 1px 0 rgba(28, 28, 28, .08);
 }
 .pg-scrub::-moz-range-thumb {
-  width: 20px; height: 20px; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--lime);
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 1px 0 rgba(28, 28, 28, .08);
 }
 .pg-scrub:focus-visible { outline: none; }
 .pg-scrub:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(28,28,28,.22); }
 
-.pg-teach, .pg-exit { width: 32px; height: 32px; background: #fff; font-size: 13px; font-weight: 900; }
-.phone.paged ~ .pager .pg-exit { background: var(--ink); border-color: var(--ink); color: #fff; }
-.pg-teach.on { background: var(--green-500); border-color: var(--green-500); color: #fff; }
+/* The existing .pg-mid becomes a temporary bubble above the thumb. JS writes
+   its centre and the callout tip separately, so the tip stays on the physical
+   knob even when the wider bubble has to move away from a viewport edge. */
+.pg-scrub-wrap > .pg-mid {
+  position: absolute;
+  left: var(--pg-bubble-x, var(--pg-progress, 0%));
+  bottom: calc(100% + 9px);
+  z-index: 4;
+  display: flex;
+  max-width: min(240px, calc(100vw - 48px));
+  min-height: 48px;
+  padding: 10px 13px;
+  transform: translateX(-50%);
+  align-items: center;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  background: var(--white);
+  box-shadow: 0 6px 18px rgba(28, 28, 28, .10);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.pg-scrub-wrap > .pg-mid::after {
+  position: absolute;
+  left: var(--pg-tip-x, 50%);
+  bottom: -5px;
+  width: 8px;
+  height: 8px;
+  transform: translateX(-50%) rotate(45deg);
+  border-right: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--white);
+  content: "";
+}
+
+.pg-scrub-wrap.is-dragging > .pg-mid {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Scrubbing and teaching are mutually exclusive pointer gestures. Remove the
+   wing for the brief hold so the travelling label reads as one clean layer. */
+.pager:has(.pg-scrub-wrap.is-dragging) .pg-wing {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.pg-scrub-wrap .pg-label {
+  min-width: 0;
+  gap: 9px;
+  justify-content: flex-start;
+  font-size: 15px;
+}
+
+.pg-scrub-wrap .pg-act {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 17px;
+}
+
+.pg-scrub-wrap .pg-n {
+  flex: none;
+  padding: 3px 7px;
+  border-radius: 7px;
+  background: var(--gray-100);
+  font-size: 14.5px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+}
+
+/* ---------- attached tutor wing ----------
+   The right edge stays fixed to the rail. Teaching off leaves only the toggle;
+   Teaching on opens the left slot for the stamp, without moving navigation. */
+.pg-wing {
+  position: absolute;
+  right: 14px;
+  bottom: calc(100% - 1px);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 5px 7px 5px 8px;
+  border: 1px solid var(--gray-200);
+  border-radius: 16px 16px 0 0;
+  background: var(--white);
+  box-shadow: 0 -5px 16px rgba(28, 28, 28, .05);
+}
+
+.pg-stamp-slot {
+  display: grid;
+  place-items: center;
+  width: 0;
+  height: 36px;
+  margin-right: 0;
+  padding-right: 0;
+  overflow: hidden;
+  border-right: 0 solid var(--gray-200);
+  opacity: 0;
+  transform: translateX(6px) scale(.88);
+  transition: width .15s cubic-bezier(.2, .8, .2, 1),
+              margin-right .15s ease,
+              padding-right .15s ease,
+              border-width .15s ease,
+              opacity .09s ease,
+              transform .15s ease;
+}
+
+body.teaching .pg-stamp-slot {
+  width: 44px;
+  margin-right: 7px;
+  padding-right: 7px;
+  border-right-width: 1px;
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.pg-teach-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  width: auto;
+  min-width: 0;
+  height: 36px;
+  padding: 0 5px 0 7px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  font-size: 15.5px;
+  font-weight: 850;
+}
+
+.pg-teach-label { white-space: nowrap; }
+
+.pg-switch {
+  position: relative;
+  width: 30px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--gray-200);
+  transition: background .1s ease;
+}
+
+.pg-switch::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: 0 1px 3px rgba(28, 28, 28, .18);
+  content: "";
+  transition: transform .1s ease;
+}
+
+.pg-teach-toggle.on .pg-switch { background: var(--ink); }
+.pg-teach-toggle.on .pg-switch::after { transform: translateX(12px); }
+
+.pg-teach-toggle:focus-visible { outline: 2px solid var(--green-500); outline-offset: 2px; }
+
+/* The wing raises the tutor pager above the student-only rail. Reserve that
+   height only when the wing exists; student view removes it in pager.js. */
+body:has(.pager .pg-wing) {
+  --pager-reserve: 150px;
+  --pager-clearance: 120px;
+}
+
+.pg-exit { width: 32px; height: 32px; background: var(--white); font-size: 13px; font-weight: 900; }
+.phone.paged ~ .pager .pg-exit { background: var(--ink); border-color: var(--ink); color: var(--white); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-stamp-slot,
+  .pg-switch,
+  .pg-switch::after { transition: none; }
+}
 
 /* ============================================================
    Frameless page cards — no black outline/offset-shadow around

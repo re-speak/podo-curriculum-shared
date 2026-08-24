@@ -49,6 +49,7 @@
   --gray-200:  #e8e8e8;   /* every ordinary outline */
   --gray-400:  #a5a5a5;
   --gray-500:  #757575;
+  --white:     #ffffff;
 
   --line:      1px solid var(--gray-200);
 
@@ -1951,11 +1952,9 @@ body.teaching .note-input:placeholder-shown { background-color: transparent; }
 /* The button wears a small copy of the stamp, and only the tutor sees it.
    Scoped to .pager because the track sheet loads after this one and sets
    .pg-btn { display: grid } — an unscoped .pg-stamp ties on specificity and
-   loses on order, which would show the learner a button they cannot use. */
-/* The slot is ALWAYS in the layout — hidden, not removed. Toggling display
-   here added a sixth item to the bar the moment teaching mode came on, and
-   every other button slid sideways under the tutor's finger. Reserving the
-   space costs the learner one invisible 34px gap and keeps the bar still. */
+   loses on order, which would show the learner a button they cannot use.
+   The surrounding .pg-stamp-slot owns the teaching-mode expansion, keeping
+   the navigation row still while this control appears in the separate wing. */
 .pager .pg-stamp { visibility: hidden; pointer-events: none; }
 /* The art is already a bordered circle, so the button adds no ring of its own —
    a ring inside a ring is the box-in-a-box the system rules out, and it left
@@ -1972,11 +1971,6 @@ body.teaching .note-input:placeholder-shown { background-color: transparent; }
 }
 body.teaching .pager .pg-stamp { visibility: visible; pointer-events: auto; }
 .pager .pg-stamp > .stamp-art { display: block; width: 34px; height: auto; }
-
-/* Five items crowd the pill's rounded end — the last one sat 1px inside the
-   flat edge, where the 999px radius has already curved away. Unconditional,
-   because the stamp now holds its slot in both modes. */
-.pager { padding-right: 15px; }
 
 @media (prefers-reduced-motion: reduce) {
   .phone:has(> .pg-on.stamped) ~ .stamp-art { animation: none; transform: rotate(-7deg); }
