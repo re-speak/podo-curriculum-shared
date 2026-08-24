@@ -12,8 +12,12 @@
    ================================================================ */
 
 (function () {
-  // 로드맵의 칸은 클로저에 있어 DOM 만으로는 읽을 수 없다 — register 로 넘긴다
-  var sync = window.lessonSync;
+  /* 로드맵의 칸은 클로저에 있어 DOM 만으로는 읽을 수 없다 — register 로 넘긴다.
+     보드 밖(뷰어·파일 직접 열기)에서는 lessonSync 가 없다. 덱에서는 activities.js
+     가 먼저 실려 스텁을 세워 주므로 여태 드러나지 않았는데, 그 순서에 기대는 것은
+     report.js 를 덱 안에서만 열 수 있다는 뜻이었다 — shared/view/report.html 은
+     리포트 런타임만 싣는다. pager.js·highlight.js 와 같은 꼴로 막는다. */
+  var sync = window.lessonSync || { register: function () {}, push: function () {} };
 
   /* ---------- 로케일 ----------
      이 파일은 그리는 일만 하고, 「무엇을 그리는가」 는 표가 정한다. 표를 통째로
@@ -100,12 +104,21 @@
      옮긴 것이다. 리포트는 뒤엣것을 쓴다 — 표를 여기 또 적지 않고 DOM 에서
      읽으므로, 튜터가 고른 칸과 리포트에 실리는 문장이 어긋날 수 없다. 한 칸이 두 레벨(1–2 · 3–4 …)을 덮으므로 색인은
      (lv - 1) / 2 이고, band() 가 짝수 값이 들어와도 같은 칸으로 접는다. */
+  /* 다섯 칸의 「이 수업에서 어땠나」 문장. 원래 자리는 튜터가 고르는 .axq 이고,
+     고른 값을 레벨 카드의 ✓ 줄로 되읽는 것이 BAND 다 — 같은 문장을 두 번 적지
+     않으려고 마크업에서 걷어 온다.
+
+     뷰어에는 그 마크업이 없다. 튜터가 고르는 자리는 학생이 볼 문서에 있을 이유가
+     없어서 빼기 때문인데, 그러면 이 문장들도 같이 사라진다. 그래서 표에도 자리를
+     둔다 — 덱에서는 지금까지처럼 마크업이 이기고, 마크업이 없을 때만 표를 쓴다.
+     **두 곳의 값은 같아야 한다**: tools/report-viewer.py --check 가 어긋나면 막는다. */
   var BAND = {};
   document.querySelectorAll(".axq").forEach(function (q) {
     BAND[q.getAttribute("data-ax")] = [].map.call(
       q.querySelectorAll(".axq-opts button"),
       function (b) { return b.getAttribute("data-say"); });
   });
+  if (!Object.keys(BAND).length && L.BAND) BAND = L.BAND;
 
   /* 코멘트에 들어갈 「무엇을 하면 느는가」. HINT 와 따로 두는 이유는 꼴이
      달라서다 — HINT 는 목록에 놓이는 「…하기」 이고, 이쪽은 문장 가운데에
@@ -324,13 +337,30 @@
      리포트 머리글의 날짜와 수강료 쿠폰의 마감일은 같은 "오늘" 에서 나온다.
      상담은 오늘 하는 것이라, 문서에 날짜를 적어 두면 반드시 어긋난다. */
   var DOW = tx("dow", ["일", "월", "화", "수", "목", "금", "토"]);
+  /* 리포트 머리글의 날짜. 되살릴 때는 「오늘」 이 아니라 상담한 날이라
+     restore() 가 다시 부른다 — 지난주에 받은 리포트를 오늘 열었다고 오늘
+     날짜가 찍히면, 그 종이는 그날의 기록이 아니게 된다. */
+  function stampReportDate(d) {
+    var el = document.querySelector(".rm-date");
+    if (!el) return;
+    el.textContent = d.getFullYear() + "." +
+      String(d.getMonth() + 1).padStart(2, "0") + "." +
+      String(d.getDate()).padStart(2, "0");
+  }
+
+  /* 리포트 머리글의 한 줄. 덱에서는 마크업에 적혀 있고 그대로 둔다 — 한 덱은
+     한 제품이라 바뀔 일이 없다. 뷰어는 한 문서로 두 제품을 여니 표에서 받는다:
+     「あなたの韓国語の実力を」 를 영어 체험 리포트에 그대로 띄우면, 맞는 문장이
+     하나도 없는데 화면은 멀쩡해 보인다. */
+  function stampHeadline() {
+    var el = document.querySelector(".rhead-t");
+    var line = L.text && L.text.headline;
+    if (el && line) el.innerHTML = line;
+  }
+
   function stampDates() {
-    var d = new Date(), el = document.querySelector(".rm-date");
-    if (el) {
-      el.textContent = d.getFullYear() + "." +
-        String(d.getMonth() + 1).padStart(2, "0") + "." +
-        String(d.getDate()).padStart(2, "0");
-    }
+    var d = new Date();
+    stampReportDate(d);
     // 쿠폰은 오늘 포함 나흘째 자정에 닫힌다(D+3)
     var end = new Date(d.getTime() + 3 * 86400000);
     var big = document.querySelector(".dl-date");
@@ -1291,9 +1321,80 @@
      칸이라 비워 둘 수도 없다. **리포트를 그리는 데 쓰라고 여는 것이 아니다.** */
   function levelName() { return pick.level ? LV[String(overall())].name : null; }
 
-  /* 리포트 밖에서 쓸 수 있는 것은 이 셋뿐이다. 레벨표·기간 계산·코스 목록은
+  /* ================================================================
+     복원 · 저장된 스냅샷으로 같은 리포트를 다시 그린다
+
+     snapshot() 의 반대 방향이다. 스냅샷에는 **입력만** 들어 있으므로, 되살릴
+     때 할 일도 입력을 제자리에 돌려놓는 것뿐이다 — 레벨 문안·항목 문장·
+     좋아요/아쉬워요·코멘트·기간·코스 순서는 render() 가 이 파일의 표에서 다시
+     계산한다. 그래서 저장된 리포트와 그날 학생이 본 리포트가 같아진다.
+
+     이 함수가 있는 이유는 하나다: 리포트를 그리는 곳이 둘이 되지 않게 하려고.
+     앱이 자기 쪽에 같은 표를 다시 적으면 그 순간 판본이 둘이 되고, 한쪽만
+     고쳐지는 날이 온다. 앱은 이 파일을 부른다.
+
+     읽기 전용이다. 되살린 리포트는 기록이지 입력 폼이 아니라서, 페이스
+     슬라이더를 잠그고 body 에 report-view 를 건다. 튜터 전용 블록(.lvcheck ·
+     .axsteps · .rep-send)은 원래 body.teaching 에서만 보이므로 따로 감출 것이
+     없다 — 뷰어는 그 클래스를 걸지 않는다.
+     ================================================================ */
+  function restore(snap) {
+    if (!snap || !snap.answers || !snap.assessment) {
+      throw new Error("podoReport.restore: 스냅샷에 answers/assessment 가 없습니다.");
+    }
+
+    pick.level = snap.assessment.level || null;
+    AREAS.forEach(function (a) {
+      var v = (snap.assessment.areas || {})[a.k];
+      pick["ax-" + a.k] = v == null ? null : v;
+    });
+    pick.why = (snap.answers.why || []).slice();
+    pick.goal = snap.answers.goal || null;
+
+    /* 페이스는 두 자리에 있다: answers.pace 는 니즈 장에서 고른 값이고,
+       plan.perWeek 는 상담에서 슬라이더로 합의한 값이다. 계획의 숫자를 내는
+       것은 뒤쪽이므로 그쪽을 쓴다 — pick.pace 에도 같은 값을 넣는 것은
+       syncFreq() 가 매 render 마다 pick.pace 로 슬라이더를 되돌리기 때문이다.
+       둘을 다르게 두면 그리는 순간 합의한 페이스가 니즈 장의 값으로 덮인다. */
+    var perWeekSaved = (snap.plan && snap.plan.perWeek) || snap.answers.pace || null;
+    pick.pace = perWeekSaved;
+    if (freq && perWeekSaved) freq.value = perWeekSaved;
+
+    /* 고른 자리에 표시를 되돌려 놓는다. 지금 그리는 데 쓰이지는 않는다
+       (렌더러는 전부 pick 을 읽는다) — DOM 이 pick 과 다른 말을 하고 있으면
+       나중에 이 함수를 튜터 화면에서 부르는 날 다중 선택이 어긋난다. */
+    document.querySelectorAll("[data-group]").forEach(function (group) {
+      var key = group.getAttribute("data-group");
+      var want = pick[key];
+      var many = Array.isArray(want) ? want : (want == null ? [] : [String(want)]);
+      group.querySelectorAll("button[data-val]").forEach(function (b) {
+        b.classList.toggle("on", many.indexOf(b.getAttribute("data-val")) !== -1);
+      });
+    });
+
+    /* 찍히는 날짜는 이 리포트를 만든 날이다. capturedAt 이 없거나 읽히지
+       않는 옛 스냅샷이면 건드리지 않고 둔다 — 틀린 날짜보다 빈 자리가 낫다. */
+    var when = snap.capturedAt ? new Date(snap.capturedAt) : null;
+    if (when && !isNaN(when.getTime())) stampReportDate(when);
+
+    lvEditing = false;
+    editing = null;
+    roadStep = 0;
+
+    document.body.classList.add("report-view");
+    document.body.classList.remove("teaching");
+    if (freq) {
+      freq.setAttribute("aria-disabled", "true");
+      freq.tabIndex = -1;
+    }
+
+    render();
+  }
+
+  /* 리포트 밖에서 쓸 수 있는 것은 이 넷뿐이다. 레벨표·기간 계산·코스 목록은
      클로저에 그대로 둔다 — 밖에서 만질 수 있게 열어 두면 계획의 근거가 두 곳이
-     된다. 앱이 리포트를 다시 그릴 때 쓰는 것도 이 파일이어야 한다. */
+     된다. 앱이 리포트를 다시 그릴 때 쓰는 것도 이 파일이다: restore() 로
+     들어와 같은 표로 다시 그린다(shared/view/report.html). */
   /* 저장 버튼(report-submit.js)이 읽는 창구. 표를 갈아 끼우면 보내는 값도
      함께 갈려야 하므로, 로케일이 정하는 두 값을 여기 실어 보낸다 — 없으면
      한국어 기본값이라, 전역을 안 놓는 덱은 예전과 같은 값을 보낸다.
@@ -1301,11 +1402,12 @@
      고치고 나머지는 통과시킨다). source 는 앱의 BFF 가 걷어내므로 실제
      검증에는 쓰이지 않지만, 어느 제품이 보낸 것인지를 봉투에 남겨 둔다. */
   window.podoReport = {
-    snapshot: snapshot, missing: missing, levelName: levelName,
+    snapshot: snapshot, restore: restore, missing: missing, levelName: levelName,
     language: L.language || "KO",
     source: L.submitSource || "korean-trial-report"
   };
 
+  stampHeadline();
   stampDates();
   render();
 })();

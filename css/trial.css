@@ -5761,6 +5761,14 @@ body.teaching .tcon { display: block; margin: 0 0 28px; }
   -webkit-appearance: none; appearance: none; background: none; cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
+/* ---------- 되살린 리포트 · 읽는 것이지 고치는 것이 아니다 ----------
+   report.js 의 restore() 가 body 에 report-view 를 건다. 저장된 리포트는 그날
+   합의한 기록이라 페이스를 여기서 바꾸면 위의 기간·레슨 수만 조용히 달라지고
+   저장된 값과 어긋난다 — 그래서 손잡이를 잠근다.
+   보이는 모습은 그대로 둔다(disabled 로 회색이 되지 않게 pointer-events 만
+   끈다): 슬라이더는 이 카드에서 「주 몇 회로 합의했는가」 를 보여 주는 눈금
+   이기도 해서, 흐려지면 계획이 미완성처럼 읽힌다. */
+body.report-view .freq-range { pointer-events: none; cursor: default; }
 .pm-rail .freq-range::-webkit-slider-runnable-track { height: 28px; background: none; }
 .pm-rail .freq-range::-moz-range-track { height: 28px; background: none; }
 /* 손잡이는 고른 값이라 초록이다 — 눈금(연두)과 레일(연두) 위에서 유일하게 진한
