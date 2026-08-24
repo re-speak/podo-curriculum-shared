@@ -265,6 +265,14 @@
         </div>
       </div>
 
+      <!-- ⑤ 리포트 저장 · 튜터만
+           상담이 끝나면 이 화면 그대로를 남긴다. 리포트가 끝나는
+           자리에 두는 이유는 여기가 값이 다 모이는 자리라서다 — 앞의 네 칸을
+           채우고 나서야 누를 수 있고, 안 채운 항목은 버튼 밑에 이름으로 뜬다.
+           학습자 화면에는 아예 없는 블록이라(teaching 모드에서만 뜬다) 리포트를
+           읽는 흐름은 그대로다.
+           덱은 부모 창(보드)으로 보내기만 하고, 백엔드에 남기는 일은 앱이 한다.
+           보내는 값과 le_level_test 컬럼 대응: ../report-submit.md -->
     </div>
 <!-- END report block -->
 </div>
@@ -277,6 +285,7 @@
    보내는 것 { source, type: "ready" }                       스크립트가 다 실렸다
              { source, type: "rendered", requestId, ok, error }
              { source, type: "height", height }              내용이 자란 만큼
+             { source, type: "render-complete" }             글꼴·그림·레이아웃 완료
 
    source 는 report-submit.js 와 같은 상수다. 리포트를 사이에 두고 부모와
    말을 주고받는 창구가 둘(저장·복원)뿐이라, 이름까지 갈라 둘 이유가 없다.
@@ -324,7 +333,12 @@
       document.body.classList.add("report-ready");
       reply({ type: "rendered", requestId: d.requestId, ok: true });
       /* 부모가 두 번 보내도 감시자는 하나다 — 둘이 붙으면 같은 높이를 두 번 알린다. */
-      if (!watching) { watching = true; watchHeight(e.source, e.origin); }
+      var tell = function () {};
+      if (!watching) { watching = true; tell = watchHeight(e.source, e.origin); }
+      waitForRenderComplete(function () {
+        tell();
+        reply({ type: "render-complete", requestId: d.requestId });
+      });
     } catch (err) {
       reply({ type: "rendered", requestId: d.requestId, ok: false,
               error: String((err && err.message) || err) });
@@ -345,6 +359,31 @@
     window.addEventListener("load", tell);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(tell);
     document.addEventListener("click", function () { setTimeout(tell, 350); });
+    return tell;
+  }
+
+  /* height는 중간 레이아웃에서도 올 수 있다. PDF가 기다리는 완료 신호는 모든 글꼴과
+     그림(load/error + decode)이 자리를 잡고 두 프레임이 지난 뒤에만 보낸다. */
+  function waitForRenderComplete(done) {
+    var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    var images = Array.prototype.map.call(document.images, function (img) {
+      var loaded = img.complete ? Promise.resolve() : new Promise(function (resolve) {
+        var settle = function () {
+          img.removeEventListener("load", settle);
+          img.removeEventListener("error", settle);
+          resolve();
+        };
+        img.addEventListener("load", settle, { once: true });
+        img.addEventListener("error", settle, { once: true });
+        if (img.complete) settle();
+      });
+      return loaded.then(function () {
+        return img.decode ? img.decode().catch(function () {}) : undefined;
+      });
+    });
+    Promise.all([fonts, Promise.all(images)]).then(function () {
+      requestAnimationFrame(function () { requestAnimationFrame(done); });
+    });
   }
 
   function loadInOrder(urls, done) {
