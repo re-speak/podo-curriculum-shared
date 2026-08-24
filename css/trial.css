@@ -5242,11 +5242,12 @@ body.paged { padding-bottom: 0; }
    Teaching on opens the left slot for the stamp, without moving navigation. */
 .pg-wing {
   position: absolute;
-  right: 14px;
-  bottom: calc(100% - 1px);
-  /* Paint the shared edge once: the pager covers the wing's tiny attachment
-     overlap, while the exposed controls remain above the lesson surface. */
-  z-index: -1;
+  right: 20px;
+  bottom: calc(100% + 1px);
+  /* Meet the rail edge-to-edge at its 20px corner tangent. Overlap would
+     double-composite the two translucent surfaces into a bright band; moving
+     farther right would expose a dark notch inside the rounded corner. */
+  z-index: 1;
   display: flex;
   align-items: center;
   min-height: 48px;
@@ -5350,6 +5351,10 @@ body:has(.pager .pg-wing) {
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .pager {
     border-color: color-mix(in srgb, var(--white) 82%, transparent);
+    /* The tutor wing grows directly out of this edge. A translucent top
+       hairline remains visible through the wing even when it overlaps, so
+       leave that shared edge open and keep the side/bottom outline. */
+    border-top-color: transparent;
     background: color-mix(in srgb, var(--white) 72%, transparent);
     box-shadow: 0 8px 28px rgba(28, 28, 28, .14);
     -webkit-backdrop-filter: blur(20px) saturate(1.22);
@@ -5363,7 +5368,7 @@ body:has(.pager .pg-wing) {
 
   .pg-wing {
     border-color: color-mix(in srgb, var(--white) 86%, transparent);
-    background: color-mix(in srgb, var(--white) 75%, transparent);
+    background: color-mix(in srgb, var(--white) 72%, transparent);
     box-shadow: 0 -6px 20px rgba(28, 28, 28, .08);
     -webkit-backdrop-filter: blur(20px) saturate(1.22);
     backdrop-filter: blur(20px) saturate(1.22);
