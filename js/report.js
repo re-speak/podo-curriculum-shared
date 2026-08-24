@@ -282,6 +282,21 @@
   var PRE_CORE = L.PRE_CORE !== undefined ? L.PRE_CORE
                : (COURSE.hangul ? COURSE.hangul.n : 0);
 
+  /* 체험 덱의 난이도 -> 종합 레벨 체크에서 처음 짚어 줄 칸.
+     항목별 체크는 튜터가 고른 종합 레벨을 추천값으로 쓰지만, 종합 레벨은
+     아직 고른 값이 없으므로 덱이 선언한 podo:level 을 출발점으로 쓴다.
+     이 값도 자동 선택은 아니다 — 회색 「추천」 배지만 붙이고, 실제 진단은
+     튜터가 방금 수업에서 본 실력에 따라 눌러야 한다.
+
+     한국어 체험 네 덱만 이 기본표를 쓴다. 영어의 CEFR 표는 report-en.js 가
+     같은 키로 갈아 끼운다. 다섯 레벨 체크가 1·3·5·7·9 이므로, 현재 네 덱은
+     왕초급·초급·중급은 각 경계에 놓고, 고급 체험은 레벨 7을 보수적으로
+     제안한다. 체험 덱의 난이도가 곧 학습자의 C1 실력을 증명하지는 않으며,
+     실제로 그 수준을 보인 학습자는 튜터가 9를 직접 고를 수 있다. */
+  var LESSON_LEVEL_SUGGESTION = L.LESSON_LEVEL_SUGGESTION || {
+    "왕초급": 1, "초급": 3, "중급": 5, "고급": 7
+  };
+
   var pick = { why: [], goal: null, pace: null, level: null };
 
   /* ---- the answer groups remember what was chosen ---- */
@@ -391,6 +406,12 @@
   function renderLevelPick() {
     if (!lvcheck) return;
     lvcheck.classList.toggle("folded", !!pick.level && !lvEditing);
+    var meta = document.querySelector('meta[name="podo:level"]');
+    var suggested = meta && LESSON_LEVEL_SUGGESTION[meta.getAttribute("content")];
+    lvcheck.querySelectorAll(".rung-row").forEach(function (b) {
+      b.classList.toggle("sug",
+        !pick.level && Number(b.getAttribute("data-val")) === suggested);
+    });
   }
 
   /* ---- 항목별 체크 · 한 번에 한 항목 ----

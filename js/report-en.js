@@ -265,6 +265,12 @@
     LV: LV, AREAS: AREAS, GROW: GROW, HINT: HINT, AVG: AVG,
     GOALS: GOALS, WHY_COURSE: WHY_COURSE, WHY: WHY, DONE: DONE, COURSE: COURSE,
 
+    /* 각 영어 체험 덱의 podo:level 을 다섯 칸 레벨 체크(A1·A2·B1·B2·C1)에
+       맞춘다. Advanced 체험은 보수적인 시작점과 학습 분량을 남기기 위해
+       C1이어도 7을 제안한다. 배지만 보여 주며, report.js 가 값을 대신
+       선택하지는 않으므로 실제 C1 학습자는 튜터가 9를 고를 수 있다. */
+    LESSON_LEVEL_SUGGESTION: { A1: 1, B1: 5, B2: 7, C1: 7 },
+
     CORE_N: 122,                 // Core パターン全体のレッスン数
 
     /* 場面別コースの入場フロア — Core を何レッスンまでやれば入れるか。
