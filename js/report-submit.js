@@ -1,7 +1,7 @@
 /* ================================================================
    REPORT SUBMIT · 상담이 끝난 리포트를 그대로 남긴다 (공유 스크립트)
 
-   리포트 맨 끝의 「리포트 저장」 한 칸(.rep-send)을 배선한다. 누르면
+   항목별 진단의 여섯 번째 단계인 제출 칸(.rep-send)을 배선한다. 누르면
    report.js 가 지은 스냅샷을 **부모 창으로 postMessage 하고 거기서 끝난다.**
    저장은 그다음부터 앱의 일이다 — 앱이 학생·수업 식별자를 붙여 백엔드를
    부르고, 백엔드가 le_level_test 한 행으로 받는다.
@@ -136,7 +136,7 @@
         left.map(function (k) { return LABEL[k] || k; }).join(" · "));
       return;
     }
-    say("ready", tx("ready", "이 화면 그대로 저장해요. 저장한 뒤에 고쳐서 다시 보내도 돼요."));
+    say("ready", tx("ready", "진단을 제출할 수 있어요."));
   }
 
   function newRequestId() {
@@ -151,7 +151,7 @@
     pending = null;
     sending = false;
     btn.disabled = false;
-    if (ok) btn.textContent = tx("again", "다시 보내기");
+    if (ok) btn.textContent = tx("again", "다시 제출하기");
     say(ok ? "done" : "error", text);
   }
 
@@ -162,13 +162,13 @@
     if (window.parent === window || !origin) {
       /* 덱만 따로 열어 본 경우다. 튜터가 고친 내용은 화면에 남아 있으니
          잃는 것은 없고, 수업방에서 다시 누르면 된다. */
-      say("error", tx("roomOnly", "저장은 수업방 안에서만 돼요."));
+      say("error", tx("roomOnly", "진단 제출은 수업방 안에서만 돼요."));
       return;
     }
 
     sending = true;
     btn.disabled = true;
-    say("sending", tx("sending", "보내는 중…"));
+    say("sending", tx("sending", "진단 제출 중…"));
 
     pending = newRequestId();
     window.parent.postMessage({
@@ -192,7 +192,7 @@
     if (e.origin !== parentOrigin()) return;
 
     if (data.ok) {
-      settle(true, tx("saved", "저장했어요."));
+      settle(true, tx("saved", "진단을 제출했어요."));
       return;
     }
     settle(false, tx("failed", "보내지 못했어요 (") + (data.error || tx("errorWord", "오류")) + tx("retry", ") — 다시 눌러 주세요."));
