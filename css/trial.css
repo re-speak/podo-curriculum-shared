@@ -5352,6 +5352,10 @@ body:has(.pager .pg-wing) {
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .pager {
     border-color: color-mix(in srgb, var(--white) 82%, transparent);
+    /* The tutor wing grows directly out of this edge. A translucent top
+       hairline remains visible through the wing even when it overlaps, so
+       leave that shared edge open and keep the side/bottom outline. */
+    border-top-color: transparent;
     background: color-mix(in srgb, var(--white) 72%, transparent);
     box-shadow: 0 8px 28px rgba(28, 28, 28, .14);
     -webkit-backdrop-filter: blur(20px) saturate(1.22);
