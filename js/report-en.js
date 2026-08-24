@@ -265,6 +265,10 @@
     LV: LV, AREAS: AREAS, GROW: GROW, HINT: HINT, AVG: AVG,
     GOALS: GOALS, WHY_COURSE: WHY_COURSE, WHY: WHY, DONE: DONE, COURSE: COURSE,
 
+    /* 각 영어 체험 덱의 podo:level 을 다섯 칸 레벨 체크(A1·A2·B1·B2·C1)에
+       맞춘다. 배지만 보여 주며, report.js 가 값을 대신 선택하지는 않는다. */
+    LESSON_LEVEL_SUGGESTION: { A1: 1, B1: 5, B2: 7, C1: 9 },
+
     CORE_N: 122,                 // Core パターン全体のレッスン数
 
     /* 場面別コースの入場フロア — Core を何レッスンまでやれば入れるか。
