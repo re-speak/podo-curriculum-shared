@@ -5242,12 +5242,11 @@ body.paged { padding-bottom: 0; }
    Teaching on opens the left slot for the stamp, without moving navigation. */
 .pg-wing {
   position: absolute;
-  right: 14px;
-  bottom: calc(100% - 1px);
-  /* The wing overlaps the rail by two rendered pixels. Paint it above the
-     rail so its borderless foot masks the rail's top border only where the
-     two glass surfaces join; putting it behind leaves a bright line through
-     the attachment. */
+  right: 20px;
+  bottom: calc(100% + 1px);
+  /* Meet the rail edge-to-edge at its 20px corner tangent. Overlap would
+     double-composite the two translucent surfaces into a bright band; moving
+     farther right would expose a dark notch inside the rounded corner. */
   z-index: 1;
   display: flex;
   align-items: center;
@@ -5369,7 +5368,7 @@ body:has(.pager .pg-wing) {
 
   .pg-wing {
     border-color: color-mix(in srgb, var(--white) 86%, transparent);
-    background: color-mix(in srgb, var(--white) 75%, transparent);
+    background: color-mix(in srgb, var(--white) 72%, transparent);
     box-shadow: 0 -6px 20px rgba(28, 28, 28, .08);
     -webkit-backdrop-filter: blur(20px) saturate(1.22);
     backdrop-filter: blur(20px) saturate(1.22);
