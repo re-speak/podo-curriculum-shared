@@ -1888,40 +1888,39 @@ body.teaching .note-input:placeholder-shown { background-color: transparent; }
    whichever page is showing instead, so page DOM is never touched.
 
    Fixed, not absolute: paged pages are variously block, flex, or flex-via-
-   :has() and vary in height, so the viewport is the one stable box to centre
-   in — and .phone is itself centred in the viewport, so the two coincide.
-   z-index stays under the pager's 60 so the bar is never covered. */
+   :has() and vary in height, so the viewport is the one stable box to hang
+   from — and .phone is itself centred in the viewport, so the card's corner is
+   derivable from it. z-index stays under the pager's 60 so the bar is never
+   covered. */
 .phone:has(> .pg-on.stamped) ~ .stamp-art {
   /* Ink, not paint: the stamp lands over the activity, so it stays translucent
      enough to read the tiles through. Declared as a property because the
      keyframes have to fade in to exactly this value, not to 1. */
   --stamp-ink: .9;
 
-  /* Off dead-centre, up and to the right — enough to feel hand-placed rather
-     than pasted, not enough to leave the activity. Both are doubled in the
-     inset below, because margin:auto splits whatever free space is left.
+  /* Hung from the CARD's top-right corner with the same gap on both edges —
+     that equality is the whole placement, so it is one property, not two
+     nudges that happen to agree. It reads as hand-placed in the corner rather
+     than centred, and it leaves the lower half of the page clear.
 
-     The vertical one needs a correction first: the pager reserves 118px at the
-     bottom of the viewport, so the CARD's centre already sits ~47px above the
-     viewport's. Centring on the viewport therefore reads as dead-centre on the
-     card, which is why a 40px nudge was invisible. The 94px term (118 minus
-     the card's 24px top margin) cancels that out, so --stamp-nudge-y is
-     measured from the card's centre, where the eye judges it. */
-  --stamp-nudge-x: 40px;
-  /* Spend the nudge only where there is room for it. The title-plus-script
-     header is a fixed ~190px whatever the window height, so on a short viewport
-     the card has no slack to lift a big stamp clear of the script box — below
-     ~820px the nudge relaxes back to card-centred, and on the shortest windows
-     it goes a touch negative rather than ride up into the script. */
-  --stamp-nudge-y: clamp(-14px, (100vh - 820px) / 2, 46px);
+     The card is .phone inset by its own margin (12px sides, 20px top), and
+     .phone is min(100%, 480px) centred, so its right edge is half the leftover
+     viewport plus that 12px — all of which the `right` calc below spells out.
+     Percentages resolve against the ICB, which excludes the scrollbar; 100vw
+     would not, and would drag the stamp half a scrollbar off the card. */
+  --stamp-gap: 44px;
 
   display: block;
   position: fixed;
-  inset: 0 0 calc(94px + var(--stamp-nudge-y) * 2) calc(var(--stamp-nudge-x) * 2);
+  top: calc(20px + var(--stamp-gap));
+  right: calc((100% - min(100%, 480px)) / 2 + 12px + var(--stamp-gap));
+  bottom: auto;
+  left: auto;
   z-index: 50;
-  margin: auto;             /* centred on the phone column, which is itself centred */
-  /* 30vh caps it on short windows for the same reason */
-  width: min(66vw, 300px, 30vh);
+  margin: 0;
+  /* The vw and vh caps keep the gap honest on small windows: a stamp sized off
+     a fixed px alone would eat its own margin once the card narrows. */
+  width: min(44vw, 200px, 21vh);
   height: auto;
   opacity: var(--stamp-ink);
   pointer-events: none;     /* praise must never eat a tap on the activity */
