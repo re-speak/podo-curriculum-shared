@@ -5244,9 +5244,11 @@ body.paged { padding-bottom: 0; }
   position: absolute;
   right: 14px;
   bottom: calc(100% - 1px);
-  /* Paint the shared edge once: the pager covers the wing's tiny attachment
-     overlap, while the exposed controls remain above the lesson surface. */
-  z-index: -1;
+  /* The wing overlaps the rail by two rendered pixels. Paint it above the
+     rail so its borderless foot masks the rail's top border only where the
+     two glass surfaces join; putting it behind leaves a bright line through
+     the attachment. */
+  z-index: 1;
   display: flex;
   align-items: center;
   min-height: 48px;
