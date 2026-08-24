@@ -5087,6 +5087,29 @@ body.paged { padding-bottom: 0; }
 .brand-page     { box-shadow: none; }
 .transition-page { box-shadow: none; }
 
+/* ---------- 장을 표시하는 면은 화면째다 ----------
+   라임(.brand-page)과 어두운 막 구분(.transition-page)은 **표지**다 — 켜, 제목,
+   그리고 대본 한 상자. 안에 활동이 없으니 담을 카드도 필요 없고, 색이 화면을
+   통째로 먹는 것 자체가 「장이 바뀐다」는 신호다. 라임은 위에서 이미 그렇게
+   섰고, 여기서 어두운 쪽을 같은 자리에 세운다.
+
+   흰 학습 장(.section)은 **따라오지 않는다.** 저 위 frameless 규칙이 테두리를
+   지웠고 .phone 바탕도 흰색이라, 흰 장과 흰 장 사이를 가르는 것은 24px 여백
+   하나뿐이다. 그 여백까지 걷으면 스물아홉 장이 이어붙어 한 덩어리가 된다 —
+   한 장씩 넘길 때는 몰라도, 훑어 읽기가 바탕인 스크롤에서는 페이지 경계가
+   통째로 사라진다. 색이 신호인 면은 화면을 갖고, 틀이 신호인 면은 틀을 지킨다.
+
+   높이 915 는 라임과 같은 값이다. 한 장씩 넘겨 보는 모드에서는
+   .phone.paged > .pg-on 이 화면 높이를 먹이므로 이 값은 스크롤에서만 쓰인다. */
+.transition-page {
+  min-height: 915px;
+  margin: 0;
+  border-radius: 0;
+}
+@media (max-width: 480px) {
+  .transition-page { padding: 36px 22px; }
+}
+
 
 /* ============================================================
    PATTERN ACTIVITIES  (문장 활동)
