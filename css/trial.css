@@ -6168,9 +6168,6 @@ html:has(meta[name="podo:target-language"][content="en"]) .rung-row.sug::after {
   content: "suggested";
 }
 
-.axq-done { display: none; margin: 14px 0 0; font-size: 12px; font-weight: 700; color: #8a8a85; }
-.axsteps.all .axq-done { display: block; }
-
 /* ---------- 레벨 체크 · 초록 카드 안, 튜터만 ----------
    항목별 체크와 같은 꼴이다: 먹색 점선이 "학습자 화면에는 없다" 는 표시고,
    고르는 자리가 그 값을 보여 주는 카드 안에 있다. */
@@ -7078,18 +7075,22 @@ body.teaching .tcon { display: block; margin: 0 0 28px; }
 .cst.goal { background: #f2fce0; }
 .cst.goal .cst-l { background: #fff; }
 
-/* ---------- 리포트 저장 · 리포트가 끝나는 자리, 튜터만 ----------
-   레벨 체크(.lvcheck)와 같은 꼴이다: 먹색 점선이 「학습자 화면에는 없다」는
-   표시고, 누르는 자리가 그 값이 다 모인 자리 바로 뒤에 있다.
-   버튼만 라임을 쓴다 — 이 화면에서 튜터가 실제로 「누르는」 것이 이것 하나라,
-   상태색(초록)이 아니라 브랜드 크롬 쪽이 맞다(.rep-jump 와 같은 자리). */
+/* ---------- 진단 제출 · 항목별 체크의 여섯 번째 단계, 튜터만 ----------
+   다섯 번째 답을 고르면 질문 대신 이 칸이 열린다. 항목별 체크 상자 안에서
+   이어지는 마지막 단계이므로 테두리를 하나 더 두르지 않는다. 버튼만 라임을
+   쓴다 — 이 화면에서 튜터가 실제로 「누르는」 것이 이것 하나라, 상태색(초록)이
+   아니라 브랜드 크롬 쪽이 맞다(.rep-jump 와 같은 자리). */
 .rep-send { display: none; }
-body.teaching .rep-send {
-  display: block; margin-top: 18px; padding: 14px;
-  border: 1.5px dashed var(--ink); border-radius: 14px; background: #fbfbf8;
+body.teaching .axsteps.all > .rep-send {
+  display: block; margin-top: 16px; padding: 18px 2px 2px;
+  border-top: 1px solid var(--gray-200);
 }
 .rep-send-h { display: block; font-size: 14px; font-weight: 900; color: var(--ink); }
 .rep-send-h small { margin-left: 7px; font-size: 11px; font-weight: 800; color: #8a8a85; }
+.rs-confirm {
+  margin: 5px 0 0; font-size: 12.5px; font-weight: 700; color: var(--gray-500);
+  line-height: 1.5; word-break: keep-all;
+}
 .rs-btn {
   display: block; width: 100%; margin-top: 11px; padding: 13px;
   border: 1.5px solid var(--ink); border-radius: 12px; background: var(--lime);
