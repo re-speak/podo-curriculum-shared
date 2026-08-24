@@ -98,13 +98,13 @@
   }
 
   if (teachBtn) {
-    var targetMeta = document.querySelector('meta[name="podo:target-language"]');
-    var targetLanguage = targetMeta ? targetMeta.getAttribute("content") : "ko";
+    /* The browser locale belongs to the device, not necessarily to the tutor.
+       An English browser therefore must not silently turn the classroom control
+       English. Use an explicit lesson-context language when the app supplies one;
+       otherwise fall back to Korean, the tutor team's common operating language. */
     var tutorLanguage = String(
       lessonContext.tutorLanguage
       || lessonContext.tutorLocale
-      || navigator.language
-      || targetLanguage
       || "ko"
     ).trim().toLowerCase().split(/[-_]/)[0];
     var teachingLabels = {
@@ -112,8 +112,7 @@
       ja: "指導モード",
       ko: "티칭 모드"
     };
-    var teachingLabel = teachingLabels[tutorLanguage]
-      || (targetLanguage === "en" ? teachingLabels.en : teachingLabels.ko);
+    var teachingLabel = teachingLabels[tutorLanguage] || teachingLabels.ko;
 
     var wing = document.createElement("div");
     wing.className = "pg-wing";

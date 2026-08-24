@@ -4992,12 +4992,21 @@ body { padding-bottom: 84px; }         /* the bar must not cover the last line *
 .phone.paged > .pg-on { min-height: calc(100vh - var(--pager-reserve)); }
 @supports (height: 100dvh) { .phone.paged > .pg-on { min-height: calc(100dvh - var(--pager-reserve)); } }
 
+/* A coloured chapter surface is the screen, not a card above the pager. Let it
+   continue to the viewport floor so the floating rail sits ON the colour rather
+   than manufacturing a white strip under it. Its existing padding still keeps
+   meaning-bearing copy above the controls; only the surface runs behind them. */
+.phone.paged > :is(.brand-page, .transition-page).pg-on { min-height: 100vh; }
+@supports (height: 100dvh) {
+  .phone.paged > :is(.brand-page, .transition-page).pg-on { min-height: 100dvh; }
+}
+
 /* Paged mode fills the screen with the single active page, which already
    reserves room for the bar (the -118px above). The scroll-mode chrome that
-   lives OUTSIDE that page — the .phone 100vh floor and the body's bottom
-   padding — would otherwise stack on top of a full-height page and force a
-   scroll even on a short one. Drop both while paged. */
-.phone.paged { min-height: 0; }
+   lives OUTSIDE that page — the .phone 100vh floor/padding and the body's
+   bottom padding — would otherwise stack on top of a full-height page and
+   force a scroll even on a short one. Drop all three while paged. */
+.phone.paged { min-height: 0; padding-bottom: 0; }
 body.paged { padding-bottom: 0; }
 
 /* The bar floats over the bottom of the screen. On a short page this is empty
@@ -5021,7 +5030,7 @@ body.paged { padding-bottom: 0; }
   padding: 9px;
   border: 1px solid var(--gray-200);
   border-radius: 20px;
-  background: #fff;
+  background: var(--white);
   /* The one blurred shadow in the system, and the only element that earns it:
      the bar genuinely floats above the page, and a hard offset that reads as
      construction on a card reads as a smear on something detached. Everything
@@ -5033,11 +5042,11 @@ body.paged { padding-bottom: 0; }
   flex: none;
   display: grid;
   place-items: center;
-  width: 56px;
-  height: 48px;
+  width: 62px;
+  height: 52px;
   border: 1px solid var(--gray-200);
   border-radius: 14px;
-  background: #fff;
+  background: var(--white);
   color: var(--ink);
   font-family: inherit;
   font-size: 26px;
@@ -5318,6 +5327,48 @@ body:has(.pager .pg-wing) {
 
 .pg-exit { width: 32px; height: 32px; background: var(--white); font-size: 13px; font-weight: 900; }
 .phone.paged ~ .pager .pg-exit { background: var(--ink); border-color: var(--ink); color: var(--white); }
+
+/* ---------- soft glass pager ----------
+   Navigation is one stable object; changing its material with the page would make
+   it flicker between two systems. Short teaching pages still reserve vertical room
+   above it. Long pages may scroll behind it, and full-screen chapter surfaces run
+   underneath it by design — the translucency keeps both cases readable.
+
+   Browsers without backdrop-filter keep the solid fallback declared above. */
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .pager {
+    border-color: color-mix(in srgb, var(--white) 82%, transparent);
+    background: color-mix(in srgb, var(--white) 72%, transparent);
+    box-shadow: 0 8px 28px rgba(28, 28, 28, .14);
+    -webkit-backdrop-filter: blur(20px) saturate(1.22);
+    backdrop-filter: blur(20px) saturate(1.22);
+  }
+
+  .pager .pg-btn:not(.pg-next):not(:disabled) {
+    border-color: color-mix(in srgb, var(--ink) 10%, transparent);
+    background: color-mix(in srgb, var(--white) 62%, transparent);
+  }
+
+  .pg-wing {
+    border-color: color-mix(in srgb, var(--white) 86%, transparent);
+    background: color-mix(in srgb, var(--white) 75%, transparent);
+    box-shadow: 0 -6px 20px rgba(28, 28, 28, .08);
+    -webkit-backdrop-filter: blur(20px) saturate(1.22);
+    backdrop-filter: blur(20px) saturate(1.22);
+  }
+
+  .pg-scrub-wrap > .pg-mid {
+    border-color: color-mix(in srgb, var(--white) 90%, transparent);
+    background: color-mix(in srgb, var(--white) 84%, transparent);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
+    backdrop-filter: blur(18px) saturate(1.2);
+  }
+
+  .pg-scrub-wrap > .pg-mid::after {
+    border-color: color-mix(in srgb, var(--white) 90%, transparent);
+    background: color-mix(in srgb, var(--white) 84%, transparent);
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .pg-stamp-slot,
