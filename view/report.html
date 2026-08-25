@@ -119,11 +119,14 @@
                넉넉히 잡아 두면 아래에 죽은 여백이 100px 넘게 생긴다 — 그래서
                세로(-12 204)는 건드리지 않는다.
                가로만 -18 244 에서 -48 266 으로 넓혔다. 잘라 둔 값이 한국어 축
-               이름에 맞춰져 있었는데(「듣기」 두 자), 일본어로 옮기면서 왼쪽
-               축이 「リスニング」 다섯 자가 됐다. text-anchor 가 end 라 글자가
-               왼쪽으로 자라고, 실측 내용 상자가 x=-46 까지 나가 -18 에서
-               잘려 「ニング」 만 보였다. 축 이름을 상자에 맞춰 줄이는 것은
-               거꾸로다 — 이름은 항목 칩과 코멘트 문장에도 그대로 쓰인다. -->
+               이름에 맞춰져 있었는데(「듣기」 두 자), 옮기면서 왼쪽 축이
+               길어졌다. text-anchor 가 end 라 글자가 왼쪽으로 자라 -18 에서
+               잘렸다.
+               한국어 리포트의 왼쪽 축은 이제 「聴解」 두 자(x=-15)라 -18 로
+               되돌릴 수 있어 보인다. 되돌리지 마라 — 이 문서는 ?lang 하나로 두
+               제품을 열고, 영어 리포트의 같은 자리는 "Listening"(x=-49), 왼쪽
+               아래는 "Pronunciation"(x=-39) 이다. 이제 상자를 정하는 것은
+               일본어가 아니라 영어다. -->
           <svg id="radar" class="rad" viewBox="-48 -12 266 204" role="img" aria-label="項目別の現在レベルと平均のレーダー"></svg>
         </div>
 
@@ -158,8 +161,8 @@
           <img data-ax="lis" src="../assets/ax-lis.svg" alt="">
         </div>
         <div class="axsum">
-          <div class="axs good"><h4><img src="../assets/good.svg" alt="">よくできています！</h4><ul></ul></div>
-          <div class="axs weak"><h4><img src="../assets/bad.svg" alt="">もう一歩です！</h4><ul></ul></div>
+          <div class="axs good"><h4><img src="../assets/good.svg" alt=""><span>よくできています！</span></h4><ul></ul></div>
+          <div class="axs weak"><h4><img src="../assets/bad.svg" alt=""><span>もう一歩です！</span></h4><ul></ul></div>
         </div>
         <!-- 코멘트 한 문단 · 잘하는 둘과 아쉬운 둘을 한 문장으로 잇고, 그 둘을
              기르는 방법까지 붙인다. 위 두 상자가 「무엇」 이라면 여기는 「그래서」 다. -->

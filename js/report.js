@@ -341,11 +341,34 @@
   // 10칸 사다리 위의 자리. 평균은 2.6 처럼 칸 사이에 서므로 칸 중앙이 아니라
   // 눈금값 그대로 재야 레이더(반지름 = lv/10)와 같은 곳을 가리킨다.
   function pct(lv) { return lv ? clamp(lv) * 10 : 0; }
-  // 항목을 잘하는 순으로. 「좋아요/아쉬운 점」·막대 색·추천이 모두 이 한
-  // 줄에서 나오므로, 세 곳이 서로 다른 항목을 가리키는 일이 없다.
+  // 견줄 자리와의 거리. 항목마다 평균이 다르므로, 같은 Lv.1 도 항목에 따라
+  // 「얼마나 뒤에 있나」 가 다르다. 순위의 2차 기준이자, 파란 상자의 머리말을
+  // 고르는 근거다.
+  function gap(k) { return areaLv(k) - AVG[k]; }
+  /* 항목을 잘하는 순으로. 「좋아요/아쉬운 점」·막대 색·추천이 모두 이 한
+     줄에서 나오므로, 세 곳이 서로 다른 항목을 가리키는 일이 없다.
+
+     1차 기준은 절대 눈금이다. 화면에서 가장 먼저 읽히는 것이 초록 막대의
+     길이라, 짧은 막대가 파란 상자에 서고 긴 막대가 빨간 상자에 서면 그림과
+     글이 어긋난다 — 평균과의 거리만으로 세우면 실제로 그런 뒤집힘이 나고,
+     초급 구간(최고 항목이 Lv.2~4)에서는 다섯에 하나 꼴로 난다.
+
+     값이 같을 때만 거리로 끊는다. 평균이 항목마다 다르므로 다섯이 모두 같아도
+     거리는 다섯 다 달라, 예전에 두 상자를 통째로 접던 「다섯이 모두 같으면
+     말할 것이 없다」 가 사라진다. 거리까지 같으면 AREAS 순서 — 지금 평균표
+     에서는 닿지 않는 가지지만, 평균이 실측치로 바뀌면 닿을 수 있다. 그때도
+     순서는 남고, 상자가 다시 비지는 않는다. */
   function ranked() {
     return AREAS.filter(function (a) { return rated(a.k); })
-                .sort(function (a, b) { return areaLv(b.k) - areaLv(a.k); });
+                .sort(function (a, b) {
+                  var d = areaLv(b.k) - areaLv(a.k);
+                  if (d) return d;
+                  d = gap(b.k) - gap(a.k);
+                  // 3 - 4.4 와 2 - 3.4 는 둘 다 -1.4 지만 마지막 비트가 다르다.
+                  // 그 잡음이 아래 고정 순서를 대신 정하지 않게 막는다.
+                  if (Math.abs(d) > 1e-9) return d;
+                  return AREAS.indexOf(a) - AREAS.indexOf(b);
+                });
   }
 
   /* ---- 날짜 ----
@@ -493,6 +516,14 @@
   /* ---- ② 항목별 진단 · 레이더 + 다섯 줄 ---- */
   var bars = document.querySelector(".axbars");
 
+  /* 머리말은 그림 옆의 <span> 하나다. h4 통째로 다시 쓰지 않는 이유는 그
+     안에 아이콘 <img> 가 있어서다 — 패키저는 마크업의 src 만 번들·평탄화
+     하므로, JS 가 <img> 를 다시 지어내면 로컬에서만 되고 보드에서 404 가 난다. */
+  function setAxsumTitle(sel, key, fallback) {
+    var el = document.querySelector(sel + " h4 span");
+    if (el) el.textContent = tx(key, fallback);
+  }
+
   function renderAspects() {
     growRadar();
     if (!bars) return;
@@ -514,14 +545,29 @@
       bars.appendChild(row);
     });
 
-    /* 다섯을 다 보기 전에는 잘하는 쪽도 아쉬운 쪽도 말할 수 없고, 다섯이
-       모두 같으면 말할 것이 없다. 둘 중 하나라도 걸리면 두 상자를 접는다 —
-       아직 안 본 항목을 약점이라고 말해 버리는 것이 가장 나쁜 결과다. */
-    var flat = !order.length || !allRated() ||
-               areaLv(order[0].k) === areaLv(order[order.length - 1].k);
-    document.querySelector(".axsum").classList.toggle("hide", flat);
-    document.querySelector(".axtip").classList.toggle("hide", flat);
-    if (flat) return;
+    /* 다섯을 다 보기 전에는 잘하는 쪽도 아쉬운 쪽도 말할 수 없다. 아직 안 본
+       항목을 약점이라고 말해 버리는 것이 가장 나쁜 결과라, 그때만 두 상자를
+       접는다.
+
+       예전에는 「다섯이 모두 같으면」 도 여기서 접었다. 순위가 절대값 하나로만
+       섰기 때문인데, 그러면 다섯을 다 Lv.1 로 본 초심자 — 체험에서 가장 흔한
+       결과다 — 가 가장 빈 리포트를 받았다. 이제 값이 같으면 평균과의 거리가
+       순서를 정하므로 그 경우가 없다. */
+    var unseen = !order.length || !allRated();
+    document.querySelector(".axsum").classList.toggle("hide", unseen);
+    document.querySelector(".axtip").classList.toggle("hide", unseen);
+    if (unseen) return;
+
+    /* 두 상자의 머리말은 평균선을 넘었는지에 따라 갈린다. 1등도 평균 아래일
+       수 있고 — 최고 항목이 Lv.1~2 인 초심자는 언제나 그렇다 — 그때
+       「よくできています！」 는 사실이 아니다. 반대로 꼴찌가 이미 평균 위인
+       상급자에게 「もう一歩です！」 는 실력을 깎는 말이 된다. 두 경우 모두
+       칩에 담기는 항목은 그대로고, 바뀌는 것은 그 항목을 무엇이라 부르는지다. */
+    var gTop = gap(order[0].k), gBot = gap(order[order.length - 1].k);
+    setAxsumTitle(".axs:not(.weak)", gTop >= 0 ? "goodTitle" : "goodTitleBelow",
+                  "잘하고 있어요!");
+    setAxsumTitle(".axs.weak", gBot < 0 ? "weakTitle" : "weakTitleAbove",
+                  "조금 더 연습해요");
 
     /* 항목은 이름만 적힌 줄이 아니라 그림을 단 칩으로 선다. 두 상자가 나란히
        서 있고 각 상자에 둘씩이라, 네 항목을 훑는 눈이 글자를 읽기 전에 그림으로
