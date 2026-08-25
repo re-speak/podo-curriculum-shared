@@ -77,7 +77,24 @@
   var viewerRole = String(lessonContext.viewerRole || "").trim().toLowerCase();
   var isStudent  = viewerRole === "student";
   var isTutor    = viewerRole !== "" && !isStudent;
-  if (isStudent && teachBtn) {
+
+  /* 덱이 자기 스타일시트로 T 를 감추는 길도 있다 — 예습 덱의 `deck.css` 가
+     그렇게 한다. 페이저는 런타임이 그리므로 마크업에서 지울 수가 없어서다.
+     그 경우 버튼만 안 보이게 되고 날개는 그대로 남아, 페이저 위로 아무것도
+     담기지 않은 손잡이가 솟는다. 감춰진 버튼은 «없는» 버튼과 같게 다룬다:
+     날개는 티칭 모드를 담는 그릇이지 그 자체로 장식이 아니다.
+
+     스타일시트는 스크립트보다 먼저 적용되므로(덱은 <head> 에서 링크하고
+     페이저는 문서 끝에서 돈다) 여기서 읽는 값은 이미 최종값이다. */
+  function isCssHidden(el) {
+    if (!window.getComputedStyle) return false;
+    var cs = getComputedStyle(el);
+    return cs.display === "none" || cs.visibility === "hidden";
+  }
+
+  var teachingSuppressed = false;
+  if (teachBtn && (isStudent || isCssHidden(teachBtn))) {
+    teachingSuppressed = true;
     teachBtn.remove();
     teachBtn = null;
   }
@@ -294,6 +311,8 @@
      placeholder 로 들어가면 입력칸 폭이 달라지기 때문이다 — show() 가 첫
      페이지를 재는 시점에는 이미 켜져 있어야 폭이 맞는다. tutor-notes.js 와
      stamp.js 는 이 파일 다음에 오므로 처음부터 켜진 body 를 보게 된다. */
-  if (isTutor) setTeaching(true);
+  /* 덱이 스위치를 감춘 화면에서는 켜지도 않는다 — 켜 두면 끌 수단 없이
+     정답이 열린 채로 남는다. 역할이 학생인 화면은 어차피 여기 오지 않는다. */
+  if (isTutor && !teachingSuppressed) setTeaching(true);
   show(0);
 })();
