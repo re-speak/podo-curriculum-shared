@@ -558,16 +558,15 @@
     document.querySelector(".axtip").classList.toggle("hide", unseen);
     if (unseen) return;
 
-    /* 두 상자의 머리말은 평균선을 넘었는지에 따라 갈린다. 1등도 평균 아래일
-       수 있고 — 최고 항목이 Lv.1~2 인 초심자는 언제나 그렇다 — 그때
-       「よくできています！」 는 사실이 아니다. 반대로 꼴찌가 이미 평균 위인
-       상급자에게 「もう一歩です！」 는 실력을 깎는 말이 된다. 두 경우 모두
-       칩에 담기는 항목은 그대로고, 바뀌는 것은 그 항목을 무엇이라 부르는지다. */
-    var gTop = gap(order[0].k), gBot = gap(order[order.length - 1].k);
-    setAxsumTitle(".axs:not(.weak)", gTop >= 0 ? "goodTitle" : "goodTitleBelow",
-                  "잘하고 있어요!");
-    setAxsumTitle(".axs.weak", gBot < 0 ? "weakTitle" : "weakTitleAbove",
-                  "조금 더 연습해요");
+    /* 두 상자의 머리말은 담긴 항목을 부르는 이름이지 실력에 대한 판정이 아니다.
+       판정문이던 시절에는 평균선을 넘었는지에 따라 문안을 갈라야 했다 — 1등도
+       평균 아래일 수 있고(최고 항목이 Lv.1~2 인 초심자는 언제나 그렇다) 그때
+       「よくできています！」 는 사실이 아니며, 반대로 꼴찌가 이미 평균 위인
+       상급자에게 「もう一歩です！」 는 실력을 깎는 말이 되기 때문이다. 이름은
+       어느 쪽에서도 거짓이 되지 않으므로 갈림이 필요 없고, 갈림을 없애자
+       가장 흔한 리포트(초심자)가 받던 아홉 자짜리 머리말도 함께 사라진다. */
+    setAxsumTitle(".axs:not(.weak)", "goodTitle", "잘하는 점");
+    setAxsumTitle(".axs.weak", "weakTitle", "개선점");
 
     /* 항목은 이름만 적힌 줄이 아니라 그림을 단 칩으로 선다. 두 상자가 나란히
        서 있고 각 상자에 둘씩이라, 네 항목을 훑는 눈이 글자를 읽기 전에 그림으로
