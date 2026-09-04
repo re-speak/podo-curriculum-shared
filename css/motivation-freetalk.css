@@ -1,0 +1,66 @@
+/* Learning-motivation free-talk question pair. */
+.motivation-freetalk-card {
+  padding: 16px;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  background: var(--white);
+}
+
+.motivation-empty {
+  min-height: 150px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-500);
+  font-size: 13px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.motivation-empty[hidden],
+.motivation-questions[hidden] {
+  display: none;
+}
+
+.motivation-question {
+  padding: 12px 0;
+}
+
+.motivation-question + .motivation-question {
+  border-top: 1px solid var(--gray-200);
+}
+
+.motivation-question:first-child {
+  padding-top: 2px;
+}
+
+.motivation-question:last-child {
+  padding-bottom: 0;
+}
+
+.motivation-question-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--gray-500);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.motivation-question p {
+  margin: 0;
+}
+
+.motivation-question .ko {
+  color: var(--gray-900);
+  font-size: 15px;
+  line-height: 1.48;
+  font-weight: 800;
+}
+
+.motivation-question .ja {
+  margin-top: 5px;
+  color: var(--gray-500);
+  font-size: 12px;
+  line-height: 1.45;
+}
