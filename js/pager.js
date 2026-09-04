@@ -303,10 +303,9 @@
     });
   }
 
-  // One page at a time is the only mode for now — the scrolling view is
-  // hidden rather than removed, so it can come back without a rewrite.
+  // Lessons always present one page at a time. These classes activate the
+  // pager layout before the first page is measured and shown.
   phone.classList.add("paged");
-  document.body.classList.add("paged");
   /* 튜터 화면은 켜진 채로 시작한다. show() 보다 먼저 켜는 이유는 유령 답이
      placeholder 로 들어가면 입력칸 폭이 달라지기 때문이다 — show() 가 첫
      페이지를 재는 시점에는 이미 켜져 있어야 폭이 맞는다. tutor-notes.js 와

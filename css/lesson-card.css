@@ -92,8 +92,6 @@ body {
 .phone {
   width: min(100%, 480px);
   margin: 0 auto;
-  min-height: 100vh;
-  padding-bottom: 30px;
   background: #ffffff;
 }
 
@@ -1716,12 +1714,10 @@ input.is-spot, textarea.is-spot { outline-width: 2.5px; outline-offset: 2px; }
    outline at a 3px offset — so a block scrolled flush against the edge would
    arrive with the very thing you were sent to look at already cut off.
 
-   The bottom is different only in paged decks, where .pager floats fixed over
-   the foot of the screen: "just visible" there means "just underneath the
-   bar". 118px is not a fresh measurement, it is the same reserve
-   .phone.paged > .pg-on already subtracts from the viewport for that bar, so
-   the two move together. Scroll decks have no bar and want no such gap —
-   hence the .paged scope instead of one number for everybody. */
+   The pager floats fixed over the foot of the screen: "just visible" there
+   means "just underneath the bar". 118px is not a fresh measurement, it is
+   the same reserve .phone.paged > .pg-on already subtracts from the viewport
+   for that bar, so the two move together. */
 .is-spot { scroll-margin: 16px; }
 .phone.paged .is-spot { scroll-margin-bottom: var(--pager-reserve); }
 
@@ -1915,9 +1911,9 @@ body.teaching .note-input:placeholder-shown { background-color: transparent; }
      nudges that happen to agree. It reads as hand-placed in the corner rather
      than centred, and it leaves the lower half of the page clear.
 
-     The card is .phone inset by its own margin (12px sides, 20px top), and
-     .phone is min(100%, 480px) centred, so its right edge is half the leftover
-     viewport plus that 12px — all of which the `right` calc below spells out.
+     The card fills .phone horizontally and starts 20px from its top. .phone is
+     min(100%, 480px) centred, so its right edge is half the leftover viewport —
+     all of which the `right` calc below spells out.
      Percentages resolve against the ICB, which excludes the scrollbar; 100vw
      would not, and would drag the stamp half a scrollbar off the card. */
   --stamp-gap: 44px;
@@ -1925,7 +1921,7 @@ body.teaching .note-input:placeholder-shown { background-color: transparent; }
   display: block;
   position: fixed;
   top: calc(20px + var(--stamp-gap));
-  right: calc((100% - min(100%, 480px)) / 2 + 12px + var(--stamp-gap));
+  right: calc((100% - min(100%, 480px)) / 2 + var(--stamp-gap));
   bottom: auto;
   left: auto;
   z-index: 50;
